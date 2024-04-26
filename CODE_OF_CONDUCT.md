@@ -1,4 +1,4 @@
-# Cacho Code of Conduct
+# Code of Conduct
 
 1. **Respect and Courtesy:** Cacho is committed to treating all users with respect and courtesy at all times. Rude, insulting, or derogatory behavior towards other users will not be tolerated.
 
