@@ -1,4 +1,4 @@
-# About Cacho
+# About
 
 Cacho is a versatile Discord bot designed to enhance your server experience. With a wide range of features and customizable settings, Cacho aims to make managing your Discord community easier and more enjoyable.
 
