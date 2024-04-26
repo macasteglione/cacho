@@ -16,7 +16,7 @@ To add Cacho to your server, simply invite it using the provided invite link. On
 For any questions, issues, or feedback regarding Cacho, please join our support server [here](link_to_support_server). Our team is dedicated to providing assistance and continuously improving Cacho based on user feedback.
 
 ## Contribute
-Cacho is an open-source project, and contributions are welcome! If you're interested in contributing to the development of Cacho, check out our GitHub repository [here]([link_to_github_repo](https://github.com/macasteglione/cacho)).
+Cacho is an open-source project, and contributions are welcome! If you're interested in contributing to the development of Cacho, check out our GitHub repository [here](https://github.com/macasteglione/cacho).
 
 ## Stay Connected
 Stay updated on Cacho's latest news, updates, and announcements by following us on Twitter and joining our Discord community.
