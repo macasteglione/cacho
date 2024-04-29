@@ -1,11 +1,13 @@
 const {
     ApplicationCommandOptionType,
     PermissionFlagsBits,
+    Client,
+    Interaction,
 } = require("discord.js");
 
 module.exports = {
     name: "ban",
-    description: "Bans a member from the server",
+    description: "Bans a member from the server.",
     options: [
         {
             name: "target-user",
@@ -21,6 +23,11 @@ module.exports = {
     ],
     permissionsRequired: [PermissionFlagsBits.Administrator],
     botPermissions: [PermissionFlagsBits.Administrator],
+    /**
+     *
+     * @param {Client} client
+     * @param {Interaction} interaction
+     */
     callback: (client, interaction) => {
         interaction.reply(`Ban...`);
     },

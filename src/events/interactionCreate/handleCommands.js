@@ -4,16 +4,16 @@ const getLocalCommands = require("../../utils/getLocalCommands");
 module.exports = async (client, interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
-    const localCommands = getLocalCommands();
+    const LOCAL_COMMANDS = getLocalCommands();
 
     try {
-        const commandObject = localCommands.find(
+        const COMMAND_OBJECT = LOCAL_COMMANDS.find(
             (cmd) => cmd.name === interaction.commandName
         );
 
-        if (!commandObject) return;
+        if (!COMMAND_OBJECT) return;
 
-        if (commandObject.devOnly)
+        if (COMMAND_OBJECT.devOnly)
             if (!devs.includes(interaction.member.id)) {
                 interaction.reply({
                     content: "Only developers are allowed to run this command",
@@ -22,7 +22,7 @@ module.exports = async (client, interaction) => {
                 return;
             }
 
-        if (commandObject.testOnly)
+        if (COMMAND_OBJECT.testOnly)
             if (!(interaction.guild.id === testServer)) {
                 interaction.reply({
                     content: "This command cannot be ran here.",
@@ -31,8 +31,8 @@ module.exports = async (client, interaction) => {
                 return;
             }
 
-        if (commandObject.permissionsRequired?.length)
-            for (const permission of commandObject.permissionsRequired)
+        if (COMMAND_OBJECT.permissionsRequired?.length)
+            for (const permission of COMMAND_OBJECT.permissionsRequired)
                 if (!interaction.member.permissions.has(permission)) {
                     interaction.reply({
                         content: "Not enought permissions.",
@@ -41,11 +41,11 @@ module.exports = async (client, interaction) => {
                     return;
                 }
 
-        if (commandObject.botPermissions?.length)
-            for (const permission of commandObject.botPermissions) {
-                const bot = interaction.guild.members.me;
+        if (COMMAND_OBJECT.botPermissions?.length)
+            for (const permission of COMMAND_OBJECT.botPermissions) {
+                const BOT = interaction.guild.members.me;
 
-                if (!bot.permissions.has(permission)) {
+                if (!BOT.permissions.has(permission)) {
                     interaction.reply({
                         content: "I dont have enought permissions.",
                         ephemeral: true,
@@ -54,7 +54,7 @@ module.exports = async (client, interaction) => {
                 }
             }
 
-        await commandObject.callback(client, interaction);
+        await COMMAND_OBJECT.callback(client, interaction);
     } catch (error) {
         console.log(`There was an error running this command: ${error}`);
     }
