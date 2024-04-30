@@ -1,0 +1,58 @@
+{
+    "commands": {
+        "help": {
+            "description": "Shows a list of commands you can use."
+        },
+        "level": {
+            "description": "Shows your level.",
+            "target": {
+                "description": "Shows someone's level."
+            }
+        },
+        "ping": {
+            "description": "Replies with the bot ping!"
+        },
+        "roulette": {
+            "description": "Creates a roulette, and play with it!",
+            "add": {
+                "description": "Adds an element to the roulette.",
+                "element": {
+                    "description": "The name of the element to add."
+                }
+            },
+            "remove": {
+                "description": "Removes the element from the roulette",
+                "element": {
+                    "description": "The element of the element to remove."
+                }
+            },
+            "random": {
+                "description": "Selects a random element from the roulette."
+            },
+            "clear": {
+                "description": "Clears the roulette."
+            },
+            "show": {
+                "description": "Shows the roulette."
+            },
+            "noElements": ":x: There are no elements in the roulette.",
+            "randomElement": "`:game_die: **Random element selected:** \\`${randomElement}\\``",
+            "proviceElementError": ":x: Please provide a name for the element.",
+            "rouletteCreated": ":white_check_mark: **Roulette created!** Use /roulette add to add a new item to the list.",
+            "elementAdded": "`:white_check_mark: **\\`${addElement}\\` added!**`",
+            "elementNotFound": ":x: The specified element is not found in the roulette.",
+            "elementRemoved": "`:white_check_mark: **\\`${removeElement}\\` removed!**`",
+            "rouletteCleared": "`:white_check_mark: **Roulette cleared!** Use /roulette add to add a new item to the list.`"
+        },
+        "language": {
+            "description": "Set the language for the bot."
+        },
+        "notImplementedYet": ":rolling_eyes: **This commands is not implemented yet.**",
+        "onlyGuild": ":x: **This command only works on guilds.**",
+        "anErrorOcurred": ":x: An error occurred while processing your request.",
+        "unknownSubcommand": ":x: Unknown subcommand.",
+        "unknownCommand": ":x: Unknown command."
+    },
+    "noLevelExp": "**You don't have any levels yet.** Chat a little more and try again.",
+    "targetNoLevelExp": "`:x: <@\\`${TARGET_USER_OBJECT.user.id}\\`> **doesn't hace any levels yet.** Try again when they chat a little more.`"
+}

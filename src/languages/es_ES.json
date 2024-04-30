@@ -1,0 +1,58 @@
+{
+    "commands": {
+        "help": {
+            "description": "Muestra una lista de comandos que puedes utilizar."
+        },
+        "level": {
+            "description": "Muestra tu nivel.",
+            "target": {
+                "description": "Muestra el nivel de alguien."
+            }
+        },
+        "ping": {
+            "description": "¡Responde con el bot ping!"
+        },
+        "roulette": {
+            "description": "Crea una ruleta, ¡y juega con ella!",
+            "add": {
+                "description": "Añade un elemento a la ruleta.",
+                "element": {
+                    "description": "El nombre del elemento a añadir."
+                }
+            },
+            "remove": {
+                "description": "Elimina el elemento de la ruleta",
+                "element": {
+                    "description": "El elemento del elemento a eliminar."
+                }
+            },
+            "random": {
+                "description": "Selecciona un elemento aleatorio de la ruleta."
+            },
+            "clear": {
+                "description": "Borra la ruleta."
+            },
+            "show": {
+                "description": "Muestra la ruleta."
+            },
+            "noElements": ":x: No hay elementos en la ruleta.",
+            "randomElement": "`:game_die: **Elemento seleccionado al azar:** \\`${randomElement}\\``",
+            "proviceElementError": ":x: Indique un nombre para el elemento.",
+            "rouletteCreated": ":white_check_mark: **Utiliza /roulette add para agegar un nuevo elemento a la lista.",
+            "elementAdded": "`:white_check_mark: **\\`${addElement}\\` agregado!**`",
+            "elementNotFound": ":x: El elemento especificado no se encuentra en la ruleta.",
+            "elementRemoved": "`:white_check_mark: **\\`${removeElement}\\` eliminado!**`",
+            "rouletteCleared": "`:white_check_mark: **¡Ruleta limpia!** Utiliza /roulette add para agregar un nuevo elemento a la lista.`"
+        },
+        "language": {
+            "description": "Configura el idioma para el bot."
+        },
+        "notImplementedYet": ":rolling_eyes: **Este comando aún no está implementado.**",
+        "onlyGuild": ":x: **Este comando sólo funciona en los servers.**",
+        "anErrorOcurred": ":x: Se ha producido un error al procesar su solicitud.",
+        "unknownSubcommand": ":x: Subcomando desconocido.",
+        "unknownCommand": ":x: Comando desconocido."
+    },
+    "noLevelExp": "**Aún no tienes ningún nivel.** Chatea un poco más e inténtalo de nuevo.",
+    "targetNoLevelExp": "`:x: <@\\`${TARGET_USER_OBJECT.user.id}\\`> **no tiene ningún nivel todavía.** Inténtalo de nuevo cuando charlen un poco más.`"
+}

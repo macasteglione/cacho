@@ -1,18 +1,21 @@
 const { Schema, model } = require("mongoose");
 
-const ROULETTE_SCHEMA = new Schema({
+const itemSchema = new Schema(
+    {
+        name: {
+            type: String,
+            required: true,
+        },
+    },
+    { _id: false }
+);
+
+const rouletteSchema = new Schema({
     guildId: {
         type: String,
-        require: true,
+        required: true,
     },
-    items: [
-        {
-            name: {
-                type: String,
-                required: true,
-            },
-        },
-    ],
+    items: [itemSchema],
 });
 
-module.exports = model("Roulette", ROULETTE_SCHEMA);
+module.exports = model("Roulette", rouletteSchema);
