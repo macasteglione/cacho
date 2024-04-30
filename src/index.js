@@ -1,7 +1,7 @@
 const { Client, IntentsBitField } = require("discord.js");
 const { CommandKit } = require("commandkit");
 const MONGOOSE = require("mongoose");
-const fs = require("fs");
+
 require("dotenv").config();
 
 const BOT_CLIENT = new Client({
@@ -25,18 +25,6 @@ const BOT_CLIENT = new Client({
 (async () => {
     try {
         await MONGOOSE.connect(process.env.MONGO_URI);
-        BOT_CLIENT.la = {};
-
-        let languages = fs
-            .readdirSync("./src/languages")
-            .filter((file) => file.endsWith(".json"))
-            .map((lang) => lang.replace(/.json/, ""));
-
-        for (const language of languages) {
-            BOT_CLIENT.la[languages] = require(`./languages/${language}`);
-        }
-        Object.freeze(BOT_CLIENT.la);
-
         console.log("Connected to MongoDB");
 
         new CommandKit({
