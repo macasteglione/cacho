@@ -1,6 +1,6 @@
 const { Client, IntentsBitField } = require("discord.js");
+const { CommandKit } = require("commandkit");
 const MONGOOSE = require("mongoose");
-const eventHandler = require("./handlers/eventHandler");
 require("dotenv").config();
 
 const BOT_CLIENT = new Client({
@@ -8,8 +8,16 @@ const BOT_CLIENT = new Client({
         IntentsBitField.Flags.Guilds,
         IntentsBitField.Flags.GuildMembers,
         IntentsBitField.Flags.GuildMessages,
-        IntentsBitField.Flags.MessageContent,
+        IntentsBitField.Flags.GuildEmojisAndStickers,
         IntentsBitField.Flags.GuildPresences,
+        IntentsBitField.Flags.GuildVoiceStates,
+        IntentsBitField.Flags.GuildMessageReactions,
+        IntentsBitField.Flags.GuildMessageTyping,
+        IntentsBitField.Flags.GuildModeration,
+        IntentsBitField.Flags.DirectMessages,
+        IntentsBitField.Flags.DirectMessageReactions,
+        IntentsBitField.Flags.DirectMessageTyping,
+        IntentsBitField.Flags.MessageContent,
     ],
 });
 
@@ -18,7 +26,13 @@ const BOT_CLIENT = new Client({
         await MONGOOSE.connect(process.env.MONGO_URI);
         console.log("Connected to MongoDB");
 
-        eventHandler(BOT_CLIENT);
+        new CommandKit({
+            client: BOT_CLIENT,
+            commandsPath: `${__dirname}/commands`,
+            eventsPath: `${__dirname}/events`,
+            skipBuiltInValidations: true,
+            bulkRegister: true,
+        });
 
         BOT_CLIENT.login(process.env.BOT_TOKEN);
     } catch (error) {

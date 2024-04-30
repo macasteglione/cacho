@@ -1,14 +1,10 @@
-const { Client, Interaction } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
 
 module.exports = {
-    name: "ping",
-    description: "Replies with the bot ping!",
-    /**
-     *
-     * @param {Client} client
-     * @param {Interaction} interaction
-     */
-    callback: async (client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName("ping")
+        .setDescription("Replies with the bot ping!"),
+    run: async ({ interaction, client }) => {
         await interaction.deferReply();
 
         const REPLY = await interaction.fetchReply();
@@ -16,7 +12,7 @@ module.exports = {
         const PING = REPLY.createdTimestamp - interaction.createdTimestamp;
 
         interaction.editReply(
-            `Pong! Client ${PING}ms | Websocket: ${client.ws.ping}ms`
+            `**Pong!** :ping_pong:\tClient ${PING}ms | Websocket: ${client.ws.ping}ms.`
         );
     },
 };

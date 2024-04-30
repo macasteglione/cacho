@@ -1,4 +1,3 @@
-const { Client, Message } = require("discord.js");
 const Level = require("../../models/Level");
 const calculateLevelExp = require("../../utils/calculateLevelExp");
 const cooldowns = new Set();
@@ -9,12 +8,7 @@ function giveRandomExp(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/**
- *
- * @param {Client} client
- * @param {Message} message
- */
-module.exports = async (client, message) => {
+module.exports = async (message, client) => {
     if (
         !message.inGuild() ||
         message.author.bot ||
@@ -40,15 +34,16 @@ module.exports = async (client, message) => {
                 LEVEL.level += 1;
 
                 message.channel.send(
-                    `${message.member} you have leveled up to **level ${LEVEL.level}**!`
+                    `:tada:\t${message.member} you have leveled up to **level ${LEVEL.level}**!\t:tada:`
                 );
             }
-
+            
             await LEVEL.save().catch((error) => {
                 console.log(`Error saving updated level: ${error}`);
             });
 
             cooldowns.add(message.author.id);
+
             setTimeout(() => {
                 cooldowns.delete(message.author.id);
             }, 60000);
@@ -60,7 +55,7 @@ module.exports = async (client, message) => {
             });
 
             await NEW_LEVEL.save();
-            
+
             cooldowns.add(message.author.id);
             setTimeout(() => {
                 cooldowns.delete(message.author.id);

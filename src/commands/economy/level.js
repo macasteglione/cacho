@@ -1,40 +1,29 @@
-const {
-    Client,
-    Interaction,
-    ApplicationCommandOptionType,
-    AttachmentBuilder,
-} = require("discord.js");
+const { AttachmentBuilder, SlashCommandBuilder } = require("discord.js");
 const Level = require("../../models/Level");
 const canvacord = require("canvacord");
 const { Font } = require("canvacord");
 const calculateLevelExp = require("../../utils/calculateLevelExp");
 
 module.exports = {
-    name: "level",
-    description: "Shows your/someone's level.",
-    options: [
-        {
-            name: "target-user",
-            description: "The user whose level you want to see.",
-            type: ApplicationCommandOptionType.Mentionable,
-        },
-    ],
-    /**
-     *
-     * @param {Client} client
-     * @param {Interaction} interaction
-     */
-    callback: async (client, interaction) => {
+    data: new SlashCommandBuilder()
+        .setName("level")
+        .setDescription("Shows your/someone's level.")
+        .addUserOption((option) =>
+            option
+                .setName("target")
+                .setDescription("Shows your/someone's level.")
+        ),
+    run: async ({ interaction, client }) => {
         if (!interaction.inGuild()) {
-            interaction.reply("You can only run this command inside a server.");
+            interaction.reply(":x: **This command only works on guilds.**");
             return;
         }
 
         await interaction.deferReply();
 
-        const MENTIONED_USER_ID = interaction.options.get("target-user")?.value;
+        const MENTIONED_USER_ID = interaction.options.getUser("target")?.id;
         const TARGET_USER_ID = MENTIONED_USER_ID || interaction.member.id;
-        const TARGET_USER_OBJECT = await interaction.member.fetch(
+        const TARGET_USER_OBJECT = await interaction.guild.members.fetch(
             TARGET_USER_ID
         );
         const FETCH_LEVEL = await Level.findOne({
@@ -45,8 +34,8 @@ module.exports = {
         if (!FETCH_LEVEL) {
             interaction.editReply(
                 MENTIONED_USER_ID
-                    ? `${TARGET_USER_OBJECT.user.tag} doesn't hace any levels yet. Try again when they chat a little more.`
-                    : "You don't have any levels yet. Chat a little more and try again."
+                    ? `:x: <@${TARGET_USER_OBJECT.user.id}> **doesn't hace any levels yet.** Try again when they chat a little more.`
+                    : "**You don't have any levels yet.** Chat a little more and try again."
             );
             return;
         }
