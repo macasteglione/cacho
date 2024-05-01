@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const Roulette = require("../../models/Roulette");
+const getLanguages = require("../../utils/getLanguages");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -38,10 +39,12 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand.setName("show").setDescription("Shows the roulette.")
         ),
-    run: async ({ interaction }) => {
+    run: async ({ interaction, client }) => {
         try {
+            const serverLanguage = await getLanguages(client);
+            const guild = interaction.guild.id;
             const QUERY = {
-                guildId: interaction.guild.id,
+                guildId: guild,
             };
             const roulette = await Roulette.findOne(QUERY);
             const subcommand = interaction.options.getSubcommand();
@@ -52,7 +55,10 @@ module.exports = {
                 case "random":
                     if (!roulette || roulette.items.length === 0)
                         return interaction.editReply(
-                            ":x: There are no elements in the roulette."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.noElements
+                            )
                         );
 
                     const randomIndex = Math.floor(
@@ -61,7 +67,10 @@ module.exports = {
                     const randomElement = roulette.items[randomIndex].name;
 
                     return interaction.editReply(
-                        `:game_die: **Random element selected:** ${randomElement}`
+                        eval(
+                            serverLanguage[guild].translation.commands.roulette
+                                .randomElement
+                        )
                     );
 
                 case "add":
@@ -69,19 +78,25 @@ module.exports = {
 
                     if (!addElement)
                         return interaction.editReply(
-                            ":x: Please provide a name for the element."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.proviceElementError
+                            )
                         );
 
                     if (!roulette) {
                         const newRoulette = new Roulette({
-                            guildId: interaction.guild.id,
+                            guildId: guild,
                             items: [{ name: addElement }],
                         });
 
                         await newRoulette.save();
 
                         return interaction.editReply(
-                            ":white_check_mark: **Roulette created!** Use `/roulette add` to add a new item to the list."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.rouletteCreated
+                            )
                         );
                     } else {
                         roulette.items.push({ name: addElement });
@@ -89,14 +104,20 @@ module.exports = {
                         await roulette.save();
 
                         return interaction.editReply(
-                            `:white_check_mark: **${addElement} added!**`
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.elementAdded
+                            )
                         );
                     }
 
                 case "remove":
                     if (!roulette || roulette.items.length === 0)
                         return interaction.editReply(
-                            ":x: There are no elements in the roulette."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.noElements
+                            )
                         );
 
                     const removeElement =
@@ -104,7 +125,10 @@ module.exports = {
 
                     if (!removeElement)
                         return interaction.editReply(
-                            ":x: Please provide a name for the element."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.proviceElementError
+                            )
                         );
 
                     const removeIndex = roulette.items.findIndex(
@@ -113,7 +137,10 @@ module.exports = {
 
                     if (removeIndex === -1)
                         return interaction.editReply(
-                            ":x: The specified element is not found in the roulette."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.elementNotFound
+                            )
                         );
 
                     roulette.items.splice(removeIndex, 1);
@@ -121,13 +148,19 @@ module.exports = {
                     await roulette.save();
 
                     return interaction.editReply(
-                        `:white_check_mark: **${removeElement} removed!**`
+                        eval(
+                            serverLanguage[guild].translation.commands.roulette
+                                .elementRemoved
+                        )
                     );
 
                 case "clear":
                     if (!roulette || roulette.items.length === 0)
                         return interaction.editReply(
-                            ":x: There are no elements in the roulette."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.noElements
+                            )
                         );
 
                     roulette.items = [];
@@ -135,13 +168,19 @@ module.exports = {
                     await roulette.save();
 
                     return interaction.editReply(
-                        `:white_check_mark: **Roulette cleared!** Use /roulette add to add a new item to the list.`
+                        eval(
+                            serverLanguage[guild].translation.commands.roulette
+                                .rouletteCleared
+                        )
                     );
 
                 case "show":
                     if (!roulette || roulette.items.length === 0)
                         return interaction.editReply(
-                            ":x: There are no elements in the roulette."
+                            eval(
+                                serverLanguage[guild].translation.commands
+                                    .roulette.noElements
+                            )
                         );
 
                     return interaction.editReply(
@@ -151,12 +190,17 @@ module.exports = {
                     );
 
                 default:
-                    return interaction.editReply(":x: Unknown subcommand.");
+                    return interaction.editReply(
+                        eval(
+                            serverLanguage[guild].translation.commands
+                                .unknownCommand
+                        )
+                    );
             }
         } catch (error) {
             console.log(`Error in roulette file: ${error}`);
-            interaction.editReply(
-                ":x: An error occurred while processing your request."
+            interaction.reply(
+                `:x: An error occurred while processing your request: \`${error}\``
             );
         }
     },

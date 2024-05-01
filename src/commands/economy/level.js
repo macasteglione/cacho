@@ -3,24 +3,28 @@ const Level = require("../../models/Level");
 const canvacord = require("canvacord");
 const { Font } = require("canvacord");
 const calculateLevelExp = require("../../utils/calculateLevelExp");
+const getLanguages = require("../../utils/getLanguages");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("level")
         .setDescription("Shows your level.")
         .addUserOption((option) =>
-            option
-                .setName("target")
-                .setDescription("Shows someone's level.")
+            option.setName("target").setDescription("Shows someone's level.")
         ),
     run: async ({ interaction, client }) => {
+        const serverLanguage = await getLanguages(client);
         try {
-            if (!interaction.inGuild()) {
-                interaction.reply(":x: **This command only works on guilds.**");
-                return;
-            }
+            const guild = interaction.guild.id;
 
             await interaction.deferReply();
+
+            if (!interaction.inGuild()) {
+                interaction.editReply(
+                    ":x: **This command only works on guilds.**"
+                );
+                return;
+            }
 
             const MENTIONED_USER_ID = interaction.options.getUser("target")?.id;
             const TARGET_USER_ID = MENTIONED_USER_ID || interaction.member.id;
@@ -29,20 +33,26 @@ module.exports = {
             );
             const FETCH_LEVEL = await Level.findOne({
                 userId: TARGET_USER_ID,
-                guildId: interaction.guild.id,
+                guildId: guild,
             });
 
             if (!FETCH_LEVEL) {
                 interaction.editReply(
                     MENTIONED_USER_ID
-                        ? `:x: <@${TARGET_USER_OBJECT.user.id}> **doesn't have any levels yet.** Try again when they chat a little more.`
-                        : "**You don't have any levels yet.** Chat a little more and try again."
+                        ? eval(
+                              serverLanguage[guild].translation.commands.level
+                                  .targetNoLevelExp
+                          )
+                        : eval(
+                              serverLanguage[guild].translation.commands.level
+                                  .noLevelExp
+                          )
                 );
                 return;
             }
 
             let allLevels = await Level.find({
-                guildId: interaction.guild.id,
+                guildId: guild,
             }).select("-_id userId level exp");
 
             allLevels.sort((a, b) => {
@@ -79,8 +89,8 @@ module.exports = {
             interaction.editReply({ files: [ATTACHMENT] });
         } catch (error) {
             console.log(`Error in level file: ${error}`);
-            interaction.editReply(
-                ":x: An error occurred while processing your request."
+            interaction.reply(
+                `:x: An error occurred while processing your request: \`${error}\``
             );
         }
     },

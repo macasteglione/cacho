@@ -1,38 +1,33 @@
-/*const Language = require("../models/Language");
+const Language = require("../models/Language");
 const fs = require("fs");
+const path = require("path");
 
 module.exports = async (client) => {
     const guildLanguages = {};
 
     try {
-        for (const guild of client.guilds.cache) {
-            const guildId = guild[0];
+        const languageFiles = {};
+        const languageFileNames = fs
+            .readdirSync(path.join(__dirname, "../languages"))
+            .filter((file) => file.endsWith(".json"))
+            .map((lang) => lang.replace(/\.json$/, ""));
+
+        for (const fileName of languageFileNames) {
+            const languageContent = require(`../languages/${fileName}.json`);
+            languageFiles[fileName] = languageContent;
+        }
+
+        for (const [guildId] of client.guilds.cache) {
             const result = await Language.findOne({ guildId: guildId });
-            guildLanguages[guildId] = result;
+            if (result)
+                guildLanguages[guildId] = {
+                    language: result.language,
+                    translation: languageFiles[result.language] || {},
+                };
         }
     } catch (error) {
         console.log(`Error while fetching guild languages: ${error}`);
     }
 
-    const languageFiles = {};
-
-    const languageFileNames = fs
-        .readdirSync(`${__dirname}/../languages`)
-        .filter((file) => file.endsWith(".json"))
-        .map((lang) => lang.replace(/.json/, ""));
-
-    for (const fileName of languageFileNames) {
-        const languageContent = require(`../languages/${fileName}.json`);
-        languageFiles[fileName] = languageContent;
-    }
-
-      for (const guildId in guildLanguages) {
-          const guildLanguage = guildLanguages[guildId];
-          if (guildLanguage.language === "en_US") {
-              guildLanguage.language = languageFiles[guildLanguage.language];
-          }
-      }
-
     return guildLanguages;
 };
-*/

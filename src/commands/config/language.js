@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const Language = require("../../models/Language");
+const getLanguages = require("../../utils/getLanguages");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,8 +16,9 @@ module.exports = {
                     { name: "English", value: "en_US" }
                 )
         ),
-    run: async ({ interaction }) => {
+    run: async ({ interaction, client }) => {
         try {
+            const serverLanguage = await getLanguages(client);
             const guild = interaction.guild.id;
             const LANGUAGE_TARGET = interaction.options.getString("target");
 
@@ -34,12 +36,15 @@ module.exports = {
             await LANGUAGE.save();
 
             interaction.editReply(
-                `Server language has been set to ${LANGUAGE_TARGET}.`
+                eval(
+                    serverLanguage[guild].translation.commands.language
+                        .languageSet
+                )
             );
         } catch (error) {
             console.log(`Error in language file: ${error}`);
-            interaction.editReply(
-                ":x: An error occurred while processing your request."
+            interaction.reply(
+                `:x: An error occurred while processing your request: \`${error}\``
             );
         }
     },
