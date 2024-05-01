@@ -13,8 +13,8 @@ module.exports = {
             option.setName("target").setDescription("Shows someone's level.")
         ),
     run: async ({ interaction, client }) => {
-        const serverLanguage = await getLanguages(client);
         try {
+            const serverLanguage = await getLanguages(client);
             const guild = interaction.guild.id;
 
             await interaction.deferReply();
