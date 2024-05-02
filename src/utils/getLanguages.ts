@@ -1,16 +1,17 @@
-const Language = require("../models/Language");
-const fs = require("fs");
-const path = require("path");
+import { Client } from "discord.js";
+import { Language } from "../models/Language";
+import fs = require("fs");
+import path = require("path");
 
-module.exports = async (client) => {
-    const guildLanguages = {};
+export default async (client: Client) => {
+    const guildLanguages: any = {};
 
     try {
-        const languageFiles = {};
+        const languageFiles: any = {};
         const languageFileNames = fs
             .readdirSync(path.join(__dirname, "../languages"))
-            .filter((file) => file.endsWith(".json"))
-            .map((lang) => lang.replace(/\.json$/, ""));
+            .filter((file: string) => file.endsWith(".json"))
+            .map((lang: string) => lang.replace(/\.json$/, ""));
 
         for (const fileName of languageFileNames) {
             const languageContent = require(`../languages/${fileName}.json`);

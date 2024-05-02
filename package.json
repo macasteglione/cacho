@@ -2,7 +2,7 @@
   "name": "cacho",
   "version": "1.0.0",
   "description": "This is a discord bot",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
-    "tsx": "^4.7.3"
+    "tsx": "^4.7.3",
+    "dotenv": "16.4.5"
   }
 }

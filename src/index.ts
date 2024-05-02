@@ -1,10 +1,10 @@
-const { Client, IntentsBitField } = require("discord.js");
-const { CommandKit } = require("commandkit");
-const MONGOOSE = require("mongoose");
+import { Client, IntentsBitField } from "discord.js";
+import { CommandKit } from "commandkit";
+import mongoose from "mongoose";
+import { config } from "dotenv";
+config();
 
-require("dotenv").config();
-
-const BOT_CLIENT = new Client({
+const BOT_CLIENT: Client = new Client({
     intents: [
         IntentsBitField.Flags.Guilds,
         IntentsBitField.Flags.GuildMembers,
@@ -24,7 +24,7 @@ const BOT_CLIENT = new Client({
 
 (async () => {
     try {
-        await MONGOOSE.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGO_URI!);
         console.log("Connected to MongoDB");
 
         new CommandKit({
@@ -35,7 +35,7 @@ const BOT_CLIENT = new Client({
             bulkRegister: true,
         });
 
-        BOT_CLIENT.login(process.env.BOT_TOKEN);
+        BOT_CLIENT.login(process.env.TEST_BOT_TOKEN);
     } catch (error) {
         console.log(`There was an error during init: ${error}`);
     }
