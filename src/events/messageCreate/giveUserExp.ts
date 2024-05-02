@@ -1,14 +1,15 @@
-const Level = require("../../models/Level");
-const calculateLevelExp = require("../../utils/calculateLevelExp");
+import { Level } from "../../models/Level";
+import calculateLevelExp from "../../utils/calculateLevelExp";
+
 const cooldowns = new Set();
 
-function giveRandomExp(min, max) {
+function giveRandomExp(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-module.exports = async (message, client) => {
+export default async (message: any, client: any) => {
     if (
         !message.inGuild() ||
         message.author.bot ||
@@ -37,7 +38,7 @@ module.exports = async (message, client) => {
                     `:tada:\t${message.member} you have leveled up to **level ${LEVEL.level}**!\t:tada:`
                 );
             }
-            
+
             await LEVEL.save().catch((error) => {
                 console.log(`Error saving updated level: ${error}`);
             });
@@ -48,7 +49,7 @@ module.exports = async (message, client) => {
                 cooldowns.delete(message.author.id);
             }, 60000);
         } else {
-            const NEW_LEVEL = Level({
+            const NEW_LEVEL = new Level({
                 userId: message.author.id,
                 guildId: message.guild.id,
                 exp: EXP_TO_GIVE,
@@ -57,6 +58,7 @@ module.exports = async (message, client) => {
             await NEW_LEVEL.save();
 
             cooldowns.add(message.author.id);
+            
             setTimeout(() => {
                 cooldowns.delete(message.author.id);
             }, 60000);

@@ -1,6 +1,6 @@
-const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
 
-const LANGUAGE_SCHEMA = new Schema({
+const languageSchema = new Schema({
     guildId: {
         type: String,
         require: true,
@@ -11,4 +11,4 @@ const LANGUAGE_SCHEMA = new Schema({
     },
 });
 
-module.exports = model("Language", LANGUAGE_SCHEMA);
+export const Language = model("Language", languageSchema);
