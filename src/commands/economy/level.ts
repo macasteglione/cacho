@@ -14,12 +14,11 @@ export const data = new SlashCommandBuilder()
     );
     
 export async function run({ interaction, client }: SlashCommandProps) {
+    const serverLanguage = await getLanguages(client);
+    const guild = interaction.guild!.id;
+    await interaction.deferReply();
+    
     try {
-        const serverLanguage = await getLanguages(client);
-        const guild = interaction.guild!.id;
-
-        await interaction.deferReply();
-
         if (!interaction.inGuild()) {
             interaction.editReply(":x: **This command only works on guilds.**");
             return;
@@ -87,8 +86,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
         interaction.editReply({ files: [ATTACHMENT] });
     } catch (error) {
         console.log(`Error in level file: ${error}`);
-        interaction.followUp(
-            `:x: An error occurred while processing your request: \`${error}\``
+        interaction.editReply(
+            `An error occurred while processing your request: \`${error}\``
         );
     }
 }

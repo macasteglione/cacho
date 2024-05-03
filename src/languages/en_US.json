@@ -1,24 +1,59 @@
 {
     "commands": {
         "roulette": {
-            "noElements": "`:x: There are no elements in the roulette.`",
+            "noElements": "There are no elements in the roulette.",
             "randomElement": "`:game_die: **Random element selected:** \\`${randomElement}\\``",
-            "proviceElementError": "`:x: Please provide a name for the element.`",
+            "proviceElementError": ":x: Please provide a name for the element.",
             "rouletteCreated": "`:white_check_mark: **Roulette created!** Use \\`/roulette add\\` to add a new item to the list.`",
             "elementAdded": "`:white_check_mark: **\\`${addElement}\\` added!**`",
-            "elementNotFound": "`:x: The specified element is not found in the roulette.`",
+            "elementNotFound": "The specified element is not found in the roulette.",
             "elementRemoved": "`:white_check_mark: **\\`${removeElement}\\` removed!**`",
             "rouletteCleared": "`:white_check_mark: **Roulette cleared!** Use \\`/roulette add\\` to add a new item to the list.`"
         },
+        "help": {
+            "commands": "Below you can see all the commands I know.",
+            "name": "Hi! I'm Cacho!",
+            "misc": "Misc",
+            "fun": "Fun",
+            "config": "Configuration",
+            "economy": "Economy",
+            "music": "Music"
+        },
+        "exit": {
+            "disconnected": "Disconnected"
+        },
         "language": {
-            "languageSet": "`:white_check_mark: **Server language** has been set to \\`${LANGUAGE_TARGET}\\`.`"
+            "languageSet": "`**Server language** has been set to \\`${LANGUAGE_TARGET}\\`.`"
         },
         "level": {
             "noLevelExp": "**You don't have any levels yet.** Chat a little more and try again.",
             "targetNoLevelExp": "`:x: \\<@${TARGET_USER_OBJECT.user.id}>\\ **doesn't hace any levels yet.** Try again when they chat a little more.`"
         },
-        "notImplementedYet": "`:rolling_eyes: **This commands is not implemented yet.**`",
-        "unknownSubcommand": "`:x: Unknown subcommand.`",
-        "unknownCommand": "`:x: Unknown command.`"
+        "play": {
+            "mustBeInVoiceChannel": "You must be in a voice channel to use this command.",
+            "noResult": "No results found.",
+            "noPlaylist": "No playlist found.",
+            "added": "Added",
+            "toQueue": "to the queue.",
+            "duration": "`Duration: \\`${song.duration}\\``"
+        },
+        "skip": {
+            "noSongPlaying": "There is no song playing.",
+            "skipped": "Skipped"
+        },
+        "resume": {
+            "resumed": "The current song has been resumed."
+        },
+        "pause": {
+            "paused": "The current song has been paused."
+        },
+        "queue": {
+            "noQueue": "There is no queue playing.",
+            "currentlyPlaying": "**Currently playing:**",
+            "queue": "**Queue:**"
+        },
+        "notImplementedYet": ":rolling_eyes: **This commands is not implemented yet.**",
+        "unknownSubcommand": ":x: Unknown subcommand.",
+        "unknownCommand": ":x: Unknown command."
     }
 }

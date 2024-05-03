@@ -6,12 +6,10 @@ export const data = new SlashCommandBuilder()
     .setDescription("Replies with the bot ping!");
 
 export async function run({ interaction, client }: SlashCommandProps) {
-    await interaction.deferReply();
-
     const REPLY = await interaction.fetchReply();
     const PING = REPLY.createdTimestamp - interaction.createdTimestamp;
 
-    interaction.editReply(
+    interaction.reply(
         `**Pong!** :ping_pong:\tClient ${PING}ms | Websocket: ${client.ws.ping}ms.`
     );
 }
