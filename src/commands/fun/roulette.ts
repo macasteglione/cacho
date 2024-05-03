@@ -41,25 +41,23 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    const serverLanguage = await getLanguages(client);
+    const guild = interaction.guild!.id;
+    const subcommand = interaction.options.getSubcommand();
+    await interaction.deferReply();
+
     try {
-        const serverLanguage = await getLanguages(client);
-        const guild = interaction.guild!.id;
         const QUERY = {
             guildId: guild,
         };
         const roulette = await Roulette.findOne(QUERY);
-        const subcommand = interaction.options.getSubcommand();
-
-        await interaction.deferReply();
 
         switch (subcommand) {
             case "random":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .noElements
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .noElements
                     );
 
                 const randomIndex = Math.floor(
@@ -79,10 +77,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
                 if (!addElement)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .proviceElementError
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .proviceElementError
                     );
 
                 if (!roulette) {
@@ -115,20 +111,16 @@ export async function run({ interaction, client }: SlashCommandProps) {
             case "remove":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .noElements
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .noElements
                     );
 
                 const removeElement = interaction.options.getString("element");
 
                 if (!removeElement)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .proviceElementError
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .proviceElementError
                     );
 
                 const removeIndex = roulette.items.findIndex(
@@ -137,10 +129,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
                 if (removeIndex === -1)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .elementNotFound
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .elementNotFound
                     );
 
                 roulette.items.splice(removeIndex, 1);
@@ -157,10 +147,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
             case "clear":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .noElements
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .noElements
                     );
 
                 roulette.items.splice(0, roulette.items.length);
@@ -177,10 +165,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
             case "show":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .noElements
-                        )
+                        serverLanguage[guild].translation.commands.roulette
+                            .noElements
                     );
 
                 return interaction.editReply(
@@ -199,8 +185,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
         }
     } catch (error) {
         console.log(`Error in roulette file: ${error}`);
-        interaction.followUp(
-            `:x: An error occurred while processing your request: \`${error}\``
+        interaction.editReply(
+            `An error occurred while processing your request: \`${error}\``
         );
     }
 }

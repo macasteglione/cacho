@@ -18,13 +18,12 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    const serverLanguage = await getLanguages(client);
+    const guild = interaction.guild!.id;
+    const LANGUAGE_TARGET = interaction.options.getString("target");
+    await interaction.deferReply();
+
     try {
-        const serverLanguage = await getLanguages(client);
-        const guild = interaction.guild!.id;
-        const LANGUAGE_TARGET = interaction.options.getString("target");
-
-        await interaction.deferReply();
-
         let LANGUAGE = await Language.findOne({ guildId: guild });
 
         if (!LANGUAGE)
@@ -44,8 +43,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
         );
     } catch (error) {
         console.log(`Error in language file: ${error}`);
-        interaction.followUp(
-            `:x: An error occurred while processing your request: \`${error}\``
+        interaction.editReply(
+            `An error occurred while processing your request: \`${error}\``
         );
     }
 }

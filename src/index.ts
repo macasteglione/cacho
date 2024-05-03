@@ -2,6 +2,8 @@ import { Client, IntentsBitField } from "discord.js";
 import { CommandKit } from "commandkit";
 import mongoose from "mongoose";
 import { config } from "dotenv";
+import { Player } from "discord-player";
+
 config();
 
 const BOT_CLIENT: Client = new Client({
@@ -22,6 +24,13 @@ const BOT_CLIENT: Client = new Client({
     ],
 });
 
+const player = new Player(BOT_CLIENT, {
+    ytdlOptions: {
+        quality: "highestaudio",
+        highWaterMark: 1 << 25,
+    },
+});
+
 (async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI!);
@@ -35,7 +44,9 @@ const BOT_CLIENT: Client = new Client({
             bulkRegister: true,
         });
 
-        BOT_CLIENT.login(process.env.BOT_TOKEN);
+        await player.extractors.loadDefault();
+
+        BOT_CLIENT.login(process.env.TEST_BOT_TOKEN);
     } catch (error) {
         console.log(`There was an error during init: ${error}`);
     }
