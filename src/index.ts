@@ -24,7 +24,7 @@ const BOT_CLIENT: Client = new Client({
     ],
 });
 
-const player = new Player(BOT_CLIENT, {
+const player: Player = new Player(BOT_CLIENT, {
     ytdlOptions: {
         quality: "highestaudio",
         highWaterMark: 1 << 25,
