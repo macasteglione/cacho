@@ -18,10 +18,11 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+    
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
     const LANGUAGE_TARGET = interaction.options.getString("target");
-    await interaction.deferReply();
 
     try {
         let LANGUAGE = await Language.findOne({ guildId: guild });

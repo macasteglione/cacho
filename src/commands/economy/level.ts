@@ -14,9 +14,10 @@ export const data = new SlashCommandBuilder()
     );
     
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+    
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
-    await interaction.deferReply();
     
     try {
         if (!interaction.inGuild()) {

@@ -7,10 +7,10 @@ export const data = new SlashCommandBuilder()
     .setDescription("Shows a list of commands you can use.");
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
-
-    await interaction.deferReply();
 
     const responseEmbed = new EmbedBuilder()
         .setColor("#db2473")

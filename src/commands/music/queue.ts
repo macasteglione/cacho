@@ -8,10 +8,11 @@ export const data = new SlashCommandBuilder()
     .setDescription("Shows the first 10 songs in the queue.");
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+    
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
     const queue = useQueue(guild);
-    await interaction.deferReply();
 
     try {
         if (!queue || !queue.isPlaying()) {
