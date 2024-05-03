@@ -10,6 +10,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
 
+    await interaction.deferReply();
+
     const responseEmbed = new EmbedBuilder()
         .setColor("#db2473")
         .setDescription(
@@ -44,5 +46,5 @@ export async function run({ interaction, client }: SlashCommandProps) {
             }
         );
 
-    interaction.reply({ embeds: [responseEmbed] });
+    interaction.editReply({ embeds: [responseEmbed] });
 }
