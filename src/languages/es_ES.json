@@ -49,7 +49,7 @@
         },
         "queue": {
             "noQueue": "No hay cola de reproducción.",
-            "currentlyPlaying": "**Currently playing:**",
+            "currentlyPlaying": "**Actualmente reproduciendo:**",
             "queue": "**Lista:**"
         },
         "notImplementedYet": ":rolling_eyes: **Este comando aún no está implementado.**",
