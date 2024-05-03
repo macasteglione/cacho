@@ -23,6 +23,7 @@
   "homepage": "https://github.com/macasteglione/cacho#readme",
   "dependencies": {
     "@discordjs/opus": "^0.9.0",
+    "@upstash/redis": "^1.30.0",
     "canvacord": "^6.0.2",
     "commandkit": "^0.1.10",
     "discord-player": "^6.6.8",
@@ -32,6 +33,8 @@
     "ioredis": "^5.4.1",
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.2",
+    "tsc": "^2.0.4",
+    "typescript": "^5.4.5",
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {

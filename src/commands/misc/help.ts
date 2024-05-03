@@ -7,6 +7,8 @@ export const data = new SlashCommandBuilder()
     .setDescription("Shows a list of commands you can use.");
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
 
@@ -44,5 +46,5 @@ export async function run({ interaction, client }: SlashCommandProps) {
             }
         );
 
-    interaction.reply({ embeds: [responseEmbed] });
+    interaction.editReply({ embeds: [responseEmbed] });
 }

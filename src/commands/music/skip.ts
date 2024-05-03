@@ -8,10 +8,11 @@ export const data = new SlashCommandBuilder()
     .setDescription("Skips the curent song.");
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+    
     const guild = interaction.guild!.id;
     const queue = useQueue(guild);
     const serverLanguage = await getLanguages(client);
-    await interaction.deferReply();
 
     try {
         if (!queue) {

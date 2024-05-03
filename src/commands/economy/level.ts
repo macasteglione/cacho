@@ -5,6 +5,7 @@ import { RankCardBuilder } from "canvacord";
 import { Font } from "canvacord";
 import calculateLevelExp from "../../utils/calculateLevelExp";
 import getLanguages from "../../utils/getLanguages";
+import { redis } from "../../lib/redis";
 
 export const data = new SlashCommandBuilder()
     .setName("level")
@@ -12,27 +13,37 @@ export const data = new SlashCommandBuilder()
     .addUserOption((option) =>
         option.setName("target").setDescription("Shows someone's level.")
     );
-    
+
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
     const serverLanguage = await getLanguages(client);
     const guild = interaction.guild!.id;
-    await interaction.deferReply();
-    
+
     try {
         if (!interaction.inGuild()) {
             interaction.editReply(":x: **This command only works on guilds.**");
             return;
         }
 
+        let FETCH_LEVEL;
         const MENTIONED_USER_ID = interaction.options.getUser("target")?.id;
         const TARGET_USER_ID = MENTIONED_USER_ID || interaction.user.id;
         const TARGET_USER_OBJECT = await interaction.guild!.members.fetch(
             TARGET_USER_ID
         );
-        const FETCH_LEVEL = await Level.findOne({
-            userId: TARGET_USER_ID,
-            guildId: guild,
-        });
+        const cacheResult: any = redis.get(TARGET_USER_ID);
+
+        if (cacheResult) {
+            FETCH_LEVEL = JSON.parse(cacheResult);
+        } else {
+            FETCH_LEVEL = await Level.findOne({
+                userId: TARGET_USER_ID,
+                guildId: guild,
+            });
+            await redis.set(cacheResult, JSON.stringify(FETCH_LEVEL), {
+                ex: 60,
+            });
+        }
 
         if (!FETCH_LEVEL) {
             interaction.editReply(

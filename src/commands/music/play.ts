@@ -38,6 +38,8 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+    
     const player = useMainPlayer();
     const queue = await player.nodes.create(interaction.guild!);
     const entry = queue.tasksQueue.acquire();
@@ -46,7 +48,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
     const voiceChannel = interaction.guild?.members.cache.get(
         interaction.user.id
     )?.voice.channelId;
-    await interaction.deferReply();
 
     try {
         if (!voiceChannel) {
