@@ -2,6 +2,7 @@ import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import getLanguages from "../../utils/getLanguages";
 import { SlashCommandProps } from "commandkit";
 import { useQueue } from "discord-player";
+import showError from "../../utils/showError";
 
 export const data = new SlashCommandBuilder()
     .setName("skip")
@@ -10,11 +11,11 @@ export const data = new SlashCommandBuilder()
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
     
-    const guild = interaction.guild!.id;
-    const queue = useQueue(guild);
-    const serverLanguage = await getLanguages(client);
-
     try {
+        const guild = interaction.guild!.id;
+        const queue = useQueue(guild);
+        const serverLanguage = await getLanguages(client);
+
         if (!queue) {
             await interaction.editReply(
                 serverLanguage[guild].translation.commands.skip.noSongPlaying
@@ -36,9 +37,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
             ],
         });
     } catch (error) {
-        console.log(`Error in skip file: ${error}`);
-        interaction.editReply(
-            `An error occurred while processing your request: \`${error}\``
-        );
+        showError("skip", error, interaction);
     }
 }

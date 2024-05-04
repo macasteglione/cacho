@@ -2,6 +2,7 @@ import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import getLanguages from "../../utils/getLanguages";
 import { SlashCommandProps } from "commandkit";
 import { Track, useQueue } from "discord-player";
+import showError from "../../utils/showError";
 
 export const data = new SlashCommandBuilder()
     .setName("queue")
@@ -9,12 +10,12 @@ export const data = new SlashCommandBuilder()
 
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
-    
-    const serverLanguage = await getLanguages(client);
-    const guild = interaction.guild!.id;
-    const queue = useQueue(guild);
 
     try {
+        const guild = interaction.guild!.id;
+        const serverLanguage = await getLanguages(client);
+        const queue = useQueue(guild);
+
         if (!queue || !queue.isPlaying()) {
             await interaction.editReply(
                 serverLanguage[guild].translation.commands.queue.noQueue
@@ -51,9 +52,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
             ],
         });
     } catch (error) {
-        console.log(`Error in queue file: ${error}`);
-        interaction.editReply(
-            `An error occurred while processing your request: \`${error}\``
-        );
+        showError("queue", error, interaction);
     }
 }

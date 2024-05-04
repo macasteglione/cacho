@@ -5,7 +5,8 @@ import { RankCardBuilder } from "canvacord";
 import { Font } from "canvacord";
 import calculateLevelExp from "../../utils/calculateLevelExp";
 import getLanguages from "../../utils/getLanguages";
-import { redis } from "../../lib/redis";
+import getCache from "../../utils/getCache";
+import showError from "../../utils/showError";
 
 export const data = new SlashCommandBuilder()
     .setName("level")
@@ -16,34 +17,27 @@ export const data = new SlashCommandBuilder()
 
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
-    const serverLanguage = await getLanguages(client);
-    const guild = interaction.guild!.id;
 
     try {
+        const guild = interaction.guild!.id;
+        const serverLanguage = await getLanguages(client);
+        
         if (!interaction.inGuild()) {
             interaction.editReply(":x: **This command only works on guilds.**");
             return;
         }
 
-        let FETCH_LEVEL;
         const MENTIONED_USER_ID = interaction.options.getUser("target")?.id;
         const TARGET_USER_ID = MENTIONED_USER_ID || interaction.user.id;
         const TARGET_USER_OBJECT = await interaction.guild!.members.fetch(
             TARGET_USER_ID
         );
-        const cacheResult: any = redis.get(TARGET_USER_ID);
 
-        if (cacheResult) {
-            FETCH_LEVEL = JSON.parse(cacheResult);
-        } else {
-            FETCH_LEVEL = await Level.findOne({
-                userId: TARGET_USER_ID,
-                guildId: guild,
-            });
-            await redis.set(cacheResult, JSON.stringify(FETCH_LEVEL), {
-                ex: 60,
-            });
-        }
+        const FETCH_LEVEL: any = await getCache(
+            guild,
+            { guildId: guild },
+            Level
+        );
 
         if (!FETCH_LEVEL) {
             interaction.editReply(
@@ -96,9 +90,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
         interaction.editReply({ files: [ATTACHMENT] });
     } catch (error) {
-        console.log(`Error in level file: ${error}`);
-        interaction.editReply(
-            `An error occurred while processing your request: \`${error}\``
-        );
+        showError("level", error, interaction);
     }
 }

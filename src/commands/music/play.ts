@@ -2,6 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { QueryType, useMainPlayer } from "discord-player";
 import getLanguages from "../../utils/getLanguages";
 import { SlashCommandProps } from "commandkit";
+import showError from "../../utils/showError";
 
 export const data = new SlashCommandBuilder()
     .setName("play")
@@ -43,13 +44,14 @@ export async function run({ interaction, client }: SlashCommandProps) {
     const player = useMainPlayer();
     const queue = await player.nodes.create(interaction.guild!);
     const entry = queue.tasksQueue.acquire();
-    const serverLanguage = await getLanguages(client);
-    const guild = interaction.guild!.id;
-    const voiceChannel = interaction.guild?.members.cache.get(
-        interaction.user.id
-    )?.voice.channelId;
 
     try {
+        const guild = interaction.guild!.id;
+        const serverLanguage = await getLanguages(client);
+        const voiceChannel = interaction.guild?.members.cache.get(
+            interaction.user.id
+        )?.voice.channelId;
+
         if (!voiceChannel) {
             await interaction.editReply(
                 serverLanguage[guild].translation.commands.play
@@ -162,10 +164,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        console.log(`Error in play file: ${error}`);
-        interaction.editReply(
-            `An error occurred while processing your request: \`${error}\``
-        );
+        showError("play", error, interaction);
     } finally {
         queue.tasksQueue.release();
     }

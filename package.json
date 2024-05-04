@@ -32,13 +32,12 @@
     "ffmpeg-static": "^5.2.0",
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.2",
-    "tsc": "^2.0.4",
-    "typescript": "^5.4.5",
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
     "dotenv": "16.4.5",
-    "tsx": "^4.7.3"
+    "tsx": "^4.7.3",
+    "typescript": "^5.4.5"
   }
 }
