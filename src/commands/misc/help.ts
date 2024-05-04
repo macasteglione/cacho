@@ -29,10 +29,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
                     value: "`pong`, `help`",
                 },
                 {
-                    name: "Configuration",
-                    value: "`language`",
-                },
-                {
                     name: "Economy",
                     value: "`level`",
                 },
