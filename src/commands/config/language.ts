@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+/*import { SlashCommandBuilder } from "discord.js";
 import { Language } from "../../models/Language";
 import { SlashCommandProps } from "commandkit";
 import getLanguages from "../../utils/getLanguages";
@@ -54,3 +54,4 @@ export async function run({ interaction, client }: SlashCommandProps) {
         showError("language", error, interaction);
     }
 }
+*/

@@ -4,9 +4,9 @@ import { Level } from "../../models/Level";
 import { RankCardBuilder } from "canvacord";
 import { Font } from "canvacord";
 import calculateLevelExp from "../../utils/calculateLevelExp";
-import getLanguages from "../../utils/getLanguages";
 import getCache from "../../utils/getCache";
 import showError from "../../utils/showError";
+import findCache from "../../utils/findCache";
 
 export const data = new SlashCommandBuilder()
     .setName("level")
@@ -18,45 +18,34 @@ export const data = new SlashCommandBuilder()
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
+    if (!interaction.inGuild())
+        return interaction.editReply(
+            ":x: **This command only works on guilds.**"
+        );
+
     try {
         const guild = interaction.guild!.id;
-        const serverLanguage = await getLanguages(client);
-        
-        if (!interaction.inGuild()) {
-            interaction.editReply(":x: **This command only works on guilds.**");
-            return;
-        }
-
         const MENTIONED_USER_ID = interaction.options.getUser("target")?.id;
         const TARGET_USER_ID = MENTIONED_USER_ID || interaction.user.id;
         const TARGET_USER_OBJECT = await interaction.guild!.members.fetch(
             TARGET_USER_ID
         );
+        const query = { guildId: guild };
 
-        const FETCH_LEVEL: any = await getCache(
-            guild,
-            { guildId: guild },
-            Level
-        );
+        const FETCH_LEVEL: any = await getCache(guild, query, Level);
 
         if (!FETCH_LEVEL) {
             interaction.editReply(
                 MENTIONED_USER_ID
-                    ? eval(
-                          serverLanguage[guild].translation.commands.level
-                              .targetNoLevelExp
-                      )
-                    : eval(
-                          serverLanguage[guild].translation.commands.level
-                              .noLevelExp
-                      )
+                    ? `:x: <@${TARGET_USER_OBJECT.user.id}> **doesn't hace any levels yet.** Try again when they chat a little more.`
+                    : "**You don't have any levels yet.** Chat a little more and try again."
             );
             return;
         }
 
-        let allLevels = await Level.find({
-            guildId: guild,
-        }).select("-_id userId level exp");
+        let allLevels = Object.values(
+            await findCache(guild, query, Level, "userId level exp")
+        );
 
         allLevels.sort((a: any, b: any) => {
             if (a.level === b.level) return b.exp - a.exp;
@@ -75,7 +64,11 @@ export async function run({ interaction, client }: SlashCommandProps) {
             .setLevel(FETCH_LEVEL.level)
             .setCurrentXP(FETCH_LEVEL.exp)
             .setRequiredXP(calculateLevelExp(FETCH_LEVEL.level))
-            .setStatus(TARGET_USER_OBJECT.presence!.status)
+            .setStatus(
+                TARGET_USER_OBJECT.presence
+                    ? TARGET_USER_OBJECT.presence.status
+                    : "offline"
+            )
             .setUsername(TARGET_USER_OBJECT.user.username)
             .setDisplayName(TARGET_USER_OBJECT.user.displayName)
             .setBackground("#23272a")
