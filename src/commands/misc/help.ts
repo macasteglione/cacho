@@ -84,6 +84,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 }
             );
     }
-    
+  
     interaction.editReply({ embeds: [responseEmbed] });
 }
