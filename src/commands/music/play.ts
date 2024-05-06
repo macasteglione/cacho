@@ -116,7 +116,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
             const result = await player.search(url!, {
                 requestedBy: interaction.user,
-                searchEngine: QueryType.AUTO,
+                searchEngine: QueryType.YOUTUBE,
             });
 
             if (result.tracks.length === 0)
