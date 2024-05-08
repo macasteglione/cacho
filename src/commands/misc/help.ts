@@ -26,7 +26,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 },
                 {
                     name: "Misc",
-                    value: "`pong`, `help`",
+                    value: "`ping`, `help`",
                 },
                 {
                     name: "Economy",
