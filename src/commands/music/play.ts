@@ -1,6 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { QueryType, useMainPlayer } from "discord-player";
-import getLanguages from "../../utils/getLanguages";
 import { SlashCommandProps } from "commandkit";
 import showError from "../../utils/showError";
 
@@ -40,25 +39,25 @@ export const data = new SlashCommandBuilder()
 
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
-    
+
+    if (!interaction.inGuild())
+        return interaction.editReply(
+            ":x: **This command only works on guilds.**"
+        );
+
     const player = useMainPlayer();
     const queue = await player.nodes.create(interaction.guild!);
     const entry = queue.tasksQueue.acquire();
 
     try {
-        const guild = interaction.guild!.id;
-        const serverLanguage = await getLanguages(client);
         const voiceChannel = interaction.guild?.members.cache.get(
             interaction.user.id
         )?.voice.channelId;
 
-        if (!voiceChannel) {
-            await interaction.editReply(
-                serverLanguage[guild].translation.commands.play
-                    .mustBeInVoiceChannel
+        if (!voiceChannel)
+            return interaction.editReply(
+                "You must be in a voice channel to use this command."
             );
-            return;
-        }
 
         if (!queue.connection) await queue.connect(voiceChannel);
 
@@ -72,12 +71,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 searchEngine: QueryType.YOUTUBE_VIDEO,
             });
 
-            if (result.tracks.length === 0) {
-                await interaction.editReply(
-                    serverLanguage[guild].translation.commands.play.noResult
-                );
-                return;
-            }
+            if (result.tracks.length === 0)
+                return interaction.editReply("No results found.");
 
             const song = result.tracks[0];
             await entry.getTask();
@@ -85,13 +80,11 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
             embed
                 .setDescription(
-                    `${serverLanguage[guild].translation.commands.play.added} **[${song.title}](${song.url})** ${serverLanguage[guild].translation.commands.play.toQueue}`
+                    `Added **[${song.title}](${song.url})** to the queue.`
                 )
                 .setThumbnail(song.thumbnail)
                 .setFooter({
-                    text: eval(
-                        serverLanguage[guild].translation.commands.play.duration
-                    ),
+                    text: `Duration: ${song.duration}`,
                 });
         } else if (interaction.options.getSubcommand() === "playlist") {
             let url = interaction.options.getString("url");
@@ -101,15 +94,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 searchEngine: QueryType.YOUTUBE_VIDEO,
             });
 
-            if (result.tracks.length === 0) {
-                await interaction.editReply(
-                    eval(
-                        serverLanguage[guild].translation.commands.play
-                            .noPlaylist
-                    )
-                );
-                return;
-            }
+            if (result.tracks.length === 0)
+                return interaction.editReply("No playlist found.");
 
             const playlist = result.playlist;
             await entry.getTask();
@@ -117,32 +103,24 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
             embed
                 .setDescription(
-                    `${
-                        serverLanguage[guild].translation.commands.play.added
-                    } **[${playlist!.title}](${playlist!.url})** ${
-                        serverLanguage[guild].translation.commands.play.toQueue
-                    }`
+                    `Added **[${playlist!.title}](${
+                        playlist!.url
+                    })** to the queue.`
                 )
                 .setThumbnail(playlist!.thumbnail)
                 .setFooter({
-                    text: eval(
-                        serverLanguage[guild].translation.commands.play.duration
-                    ),
+                    text: `Duration: ${playlist!.durationFormatted}`,
                 });
         } else if (interaction.options.getSubcommand() === "search") {
             let url = interaction.options.getString("searchterms");
 
             const result = await player.search(url!, {
                 requestedBy: interaction.user,
-                searchEngine: QueryType.AUTO,
+                searchEngine: QueryType.YOUTUBE,
             });
 
-            if (result.tracks.length === 0) {
-                await interaction.editReply(
-                    serverLanguage[guild].translation.commands.play.noResult
-                );
-                return;
-            }
+            if (result.tracks.length === 0)
+                return interaction.editReply("No results found.");
 
             const song = result.tracks[0];
             await entry.getTask();
@@ -150,13 +128,11 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
             embed
                 .setDescription(
-                    `${serverLanguage[guild].translation.commands.play.added} **[${song.title}](${song.url})** ${serverLanguage[guild].translation.commands.play.toQueue}`
+                    `Added **[${song.title}](${song.url})** to the queue.`
                 )
                 .setThumbnail(song.thumbnail)
                 .setFooter({
-                    text: eval(
-                        serverLanguage[guild].translation.commands.play.duration
-                    ),
+                    text: `Duration: ${song.duration}`,
                 });
         }
 

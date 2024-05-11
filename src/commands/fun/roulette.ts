@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
 import { SlashCommandProps } from "commandkit";
-import getLanguages from "../../utils/getLanguages";
 import { Roulette } from "../../models/Roulette";
 import { redis } from "../../lib/redis";
 import getCache from "../../utils/getCache";
@@ -57,9 +56,13 @@ export const data = new SlashCommandBuilder()
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
+    if (!interaction.inGuild())
+        return interaction.editReply(
+            ":x: **This command only works on guilds.**"
+        );
+
     try {
         const guild = interaction.guild!.id;
-        const serverLanguage = await getLanguages(client);
         const subcommand = interaction.options.getSubcommand();
         let roulette: any = await getCache(guild, { guildId: guild }, Roulette);
 
@@ -67,8 +70,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             case "random":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .noElements
+                        "There are no elements in the roulette."
                     );
 
                 const randomIndex = Math.floor(
@@ -77,20 +79,11 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 const randomElement = roulette.items[randomIndex].name;
 
                 return interaction.editReply(
-                    eval(
-                        serverLanguage[guild].translation.commands.roulette
-                            .randomElement
-                    )
+                    `:game_die: **Random element selected:** ${randomElement}`
                 );
 
             case "add":
                 const addElement = interaction.options.getString("element");
-
-                if (!addElement)
-                    return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .proviceElementError
-                    );
 
                 if (!roulette) {
                     const newRoulette = new Roulette({
@@ -101,10 +94,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
                     await newRoulette.save();
 
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .rouletteCreated
-                        )
+                        `:white_check_mark: **Roulette created!** Use \`/roulette add\` to add a new item to the list.`
                     );
                 } else {
                     roulette.items.push({ name: addElement });
@@ -112,27 +102,17 @@ export async function run({ interaction, client }: SlashCommandProps) {
                     save(roulette, guild);
 
                     return interaction.editReply(
-                        eval(
-                            serverLanguage[guild].translation.commands.roulette
-                                .elementAdded
-                        )
+                        `:white_check_mark: **${addElement} added!**`
                     );
                 }
 
             case "remove":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .noElements
+                        "There are no elements in the roulette."
                     );
 
                 const removeElement = interaction.options.getString("element");
-
-                if (!removeElement)
-                    return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .proviceElementError
-                    );
 
                 const removeIndex = roulette.items.findIndex(
                     (item: any) => item.name === removeElement
@@ -140,8 +120,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
                 if (removeIndex === -1)
                     return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .elementNotFound
+                        "The specified element is not found in the roulette."
                     );
 
                 roulette.items.splice(removeIndex, 1);
@@ -149,17 +128,13 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 save(roulette, guild);
 
                 return interaction.editReply(
-                    eval(
-                        serverLanguage[guild].translation.commands.roulette
-                            .elementRemoved
-                    )
+                    `:white_check_mark: **${removeElement} removed!**`
                 );
 
             case "clear":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .noElements
+                        "There are no elements in the roulette."
                     );
 
                 roulette.items.splice(0, roulette.items.length);
@@ -167,17 +142,13 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 save(roulette, guild);
 
                 return interaction.editReply(
-                    eval(
-                        serverLanguage[guild].translation.commands.roulette
-                            .rouletteCleared
-                    )
+                    `:white_check_mark: **Roulette cleared!** Use \`/roulette add\` to add a new item to the list.`
                 );
 
             case "show":
                 if (!roulette || roulette.items.length === 0)
                     return interaction.editReply(
-                        serverLanguage[guild].translation.commands.roulette
-                            .noElements
+                        "There are no elements in the roulette."
                     );
 
                 return interaction.editReply(

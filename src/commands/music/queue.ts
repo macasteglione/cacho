@@ -1,5 +1,4 @@
 import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import getLanguages from "../../utils/getLanguages";
 import { SlashCommandProps } from "commandkit";
 import { Track, useQueue } from "discord-player";
 import showError from "../../utils/showError";
@@ -11,17 +10,17 @@ export const data = new SlashCommandBuilder()
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
+    if (!interaction.inGuild())
+        return interaction.editReply(
+            ":x: **This command only works on guilds.**"
+        );
+
     try {
         const guild = interaction.guild!.id;
-        const serverLanguage = await getLanguages(client);
         const queue = useQueue(guild);
 
-        if (!queue || !queue.isPlaying()) {
-            await interaction.editReply(
-                serverLanguage[guild].translation.commands.queue.noQueue
-            );
-            return;
-        }
+        if (!queue || !queue.isPlaying())
+            return interaction.editReply("There is no queue playing.");
 
         const queueString = queue.tracks.data
             .slice(0, 10)
@@ -38,15 +37,9 @@ export async function run({ interaction, client }: SlashCommandProps) {
             embeds: [
                 new EmbedBuilder()
                     .setDescription(
-                        `${
-                            serverLanguage[guild].translation.commands.queue
-                                .currentlyPlaying
-                        }\n${currentSong} - <@${
+                        `**Currently playing:**\n${currentSong} - <@${
                             currentSong!.requestedBy!.id
-                        }>\n\n${
-                            serverLanguage[guild].translation.commands.queue
-                                .queue
-                        }\n${queueString}`
+                        }>\n\n**Queue:**\n${queueString}`
                     )
                     .setThumbnail(currentSong!.thumbnail),
             ],

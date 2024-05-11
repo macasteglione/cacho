@@ -1,18 +1,19 @@
 import { Model } from "mongoose";
 import { redis } from "../lib/redis";
 
-export default async <T>(
+export default async (
     key: string,
     query: any,
-    schema: Model<any>
-): Promise<T> => {
+    schema: Model<any>,
+    items?: string
+): Promise<any> => {
     const cacheResult: any = await redis.get(key);
 
     if (cacheResult) return cacheResult;
     else {
-        const fetchedObject = await schema.findOne(query);
+        const fetchedObject = await schema.find(query).select(`-_id ${items}`);
         await redis.set(key, JSON.stringify(fetchedObject), { ex: 60 });
-        
+
         return fetchedObject;
     }
 };

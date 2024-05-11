@@ -3,7 +3,7 @@
         "roulette": {
             "noElements": "There are no elements in the roulette.",
             "randomElement": "`:game_die: **Random element selected:** \\`${randomElement}\\``",
-            "proviceElementError": ":x: Please provide a name for the element.",
+            "proviceElementError": "Please provide a name for the element.",
             "rouletteCreated": "`:white_check_mark: **Roulette created!** Use \\`/roulette add\\` to add a new item to the list.`",
             "elementAdded": "`:white_check_mark: **\\`${addElement}\\` added!**`",
             "elementNotFound": "The specified element is not found in the roulette.",
