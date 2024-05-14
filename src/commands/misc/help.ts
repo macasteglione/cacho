@@ -30,11 +30,15 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 },
                 {
                     name: "Economy",
-                    value: "`level`",
+                    value: "`level show`, `level target`",
                 },
                 {
                     name: "Music",
                     value: "`play`, `skip`, `pause`, `resume`, `queue`, `exit`",
+                },
+                {
+                    name: "Config",
+                    value: "`level-config`",
                 }
             );
 

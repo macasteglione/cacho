@@ -11,7 +11,7 @@ async function save(roulette: any, guild: any) {
         { items: roulette.items },
         { new: true }
     );
-    await redis.set(guild, JSON.stringify(roulette), {
+    await redis.set("roulette", JSON.stringify(roulette), {
         ex: 60,
     });
 }
@@ -64,7 +64,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const subcommand = interaction.options.getSubcommand();
-        let roulette: any = await getCache(guild, { guildId: guild }, Roulette);
+        let roulette: any = await getCache("roulette", { guildId: guild }, Roulette);
 
         switch (subcommand) {
             case "random":
