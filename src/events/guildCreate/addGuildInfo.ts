@@ -1,9 +1,9 @@
 import { Client, Guild } from "discord.js";
-import { Language } from "../../models/Language";
+import { GuildInfo } from "../../models/guildInfo";
 
 export default async (guild: Guild, client: Client) => {
     try {
-        const NEW_GUILD = new Language({
+        const NEW_GUILD = new GuildInfo({
             guildId: guild.id,
         });
 
