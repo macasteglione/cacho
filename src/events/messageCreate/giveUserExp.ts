@@ -15,7 +15,7 @@ function giveRandomExp(min: number, max: number) {
 export default async (message: Message, client: any) => {
     const guildId = message.guild!.id;
     const guildinfo: any = await getCache(
-        "giveUserXp",
+        "guild_info",
         { guildId: guildId },
         GuildInfo
     );

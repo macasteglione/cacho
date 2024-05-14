@@ -1,4 +1,7 @@
-import { AttachmentBuilder, SlashCommandBuilder } from "discord.js";
+import {
+    AttachmentBuilder,
+    SlashCommandBuilder,
+} from "discord.js";
 import { SlashCommandProps } from "commandkit";
 import { Level } from "../../models/Level";
 import { RankCardBuilder } from "canvacord";
@@ -8,18 +11,6 @@ import getCache from "../../utils/getCache";
 import showError from "../../utils/showError";
 import findCache from "../../utils/findCache";
 import { GuildInfo } from "../../models/guildInfo";
-import { redis } from "../../lib/redis";
-
-async function save(guildInfo: any, option: boolean) {
-    let guild = await GuildInfo.findOneAndUpdate(
-        { guildId: guildInfo.guildId },
-        { levelEnabled: option },
-        { new: true }
-    );
-    await redis.set("guildInfo", JSON.stringify(guild), {
-        ex: 60,
-    });
-}
 
 export const data = new SlashCommandBuilder()
     .setName("level")
@@ -34,18 +25,6 @@ export const data = new SlashCommandBuilder()
             .addUserOption((option) =>
                 option.setName("user").setDescription("User to target.")
             )
-    )
-    .addSubcommand((subcommand) =>
-        subcommand
-            .setName("config")
-            .setDescription("Configure the leveling system.")
-            .addBooleanOption((option) =>
-                option
-                    .setName("enable")
-                    .setDescription(
-                        "Enable or disable the user leveling process."
-                    )
-            )
     );
 
 export async function run({ interaction, client }: SlashCommandProps) {
@@ -59,21 +38,10 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const guildInfo: any = await getCache(
-            "guildInfo",
+            "guild_info",
             { guildId: guild },
             GuildInfo
         );
-
-        if (interaction.options.getSubcommand() === "config") {
-            const option = interaction.options.getBoolean("enable");
-            await save(guildInfo, option!);
-
-            return interaction.editReply(
-                `Leveling system **has been ${
-                    option ? "enabled" : "disabled"
-                }.**`
-            );
-        }
 
         if (guildInfo.levelEnabled) {
             const MENTIONED_USER_ID = interaction.options.getUser("user")?.id;
@@ -99,7 +67,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             }
 
             let allLevels = Object.values(
-                await findCache(guild, query, Level, "userId level exp")
+                await findCache("all_levels", query, Level, "userId level exp")
             );
 
             allLevels.sort((a: any, b: any) => {
