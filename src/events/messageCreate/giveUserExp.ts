@@ -24,7 +24,8 @@ export default async (message: Message, client: any) => {
         (!message.inGuild() ||
             message.author.bot ||
             cooldowns.has(message.author.id)) &&
-        !guildinfo.levelEnabled
+        !guildinfo.levelEnabled &&
+        message.author.id === process.env.BOT_ID
     )
         return;
 
