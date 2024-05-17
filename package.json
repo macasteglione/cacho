@@ -23,6 +23,8 @@
   "homepage": "https://github.com/macasteglione/cacho#readme",
   "dependencies": {
     "@discordjs/opus": "^0.9.0",
+    "@google-ai/generativelanguage": "^2.4.0",
+    "@google/generative-ai": "^0.11.2",
     "@upstash/redis": "^1.30.0",
     "canvacord": "^6.0.2",
     "commandkit": "^0.1.10",
