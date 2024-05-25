@@ -23,7 +23,7 @@ export default async (message: Message, client: any) => {
     if (
         !message.inGuild() ||
         message.author.bot ||
-        cooldowns.has(message.author.id) ||
+        cooldowns.has(message.author.id) &&
         !guildinfo.levelEnabled
     )
         return;

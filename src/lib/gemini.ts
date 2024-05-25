@@ -45,6 +45,8 @@ function startNewChat() {
 }
 
 startNewChat();
-setInterval(startNewChat, 43200000);
+setTimeout(() => {
+    startNewChat();
+}, 43200000);
 
 export { chat };
