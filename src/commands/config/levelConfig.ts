@@ -11,7 +11,7 @@ async function save(guildInfo: any, option: boolean) {
         { levelEnabled: option },
         { new: true }
     );
-    await redis.set("guild_info", JSON.stringify(guild), {
+    await redis.set(guildInfo.guildId, JSON.stringify(guild), {
         ex: 60,
     });
 }
@@ -37,7 +37,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const guildInfo: any = await getCache(
-            "guild_info",
+            guild,
             { guildId: guild },
             GuildInfo
         );
