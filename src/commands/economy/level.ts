@@ -1,7 +1,4 @@
-import {
-    AttachmentBuilder,
-    SlashCommandBuilder,
-} from "discord.js";
+import { AttachmentBuilder, SlashCommandBuilder } from "discord.js";
 import { SlashCommandProps } from "commandkit";
 import { Level } from "../../models/Level";
 import { RankCardBuilder } from "canvacord";
@@ -38,7 +35,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const guildInfo: any = await getCache(
-            guild,
+            `level:guild_info:${interaction.user.id}:${guild}`,
             { guildId: guild },
             GuildInfo
         );
@@ -52,7 +49,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             const query = { guildId: guild };
 
             const FETCH_LEVEL: any = await getCache(
-                guild,
+                `level:fetch_level:${interaction.user.id}:${guild}`,
                 query,
                 Level
             );
@@ -67,7 +64,12 @@ export async function run({ interaction, client }: SlashCommandProps) {
             }
 
             let allLevels = Object.values(
-                await findCache(guild, query, Level, "userId level exp")
+                await findCache(
+                    `level:all_levels:${interaction.user.id}:${guild}`,
+                    query,
+                    Level,
+                    "userId level exp"
+                )
             );
 
             allLevels.sort((a: any, b: any) => {

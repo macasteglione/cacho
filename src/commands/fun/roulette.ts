@@ -1,19 +1,23 @@
-import { SlashCommandBuilder } from "discord.js";
+import { Interaction, SlashCommandBuilder } from "discord.js";
 import { SlashCommandProps } from "commandkit";
 import { Roulette } from "../../models/Roulette";
 import { redis } from "../../lib/redis";
 import getCache from "../../utils/getCache";
 import showError from "../../utils/showError";
 
-async function save(roulette: any, guild: any) {
+async function save(roulette: any, guild: any, interaction: Interaction) {
     roulette = await Roulette.findOneAndUpdate(
         { guildId: guild },
         { items: roulette.items },
         { new: true }
     );
-    await redis.set(guild, JSON.stringify(roulette), {
-        ex: 60,
-    });
+    await redis.set(
+        `roulette:${interaction.user.id}:${guild}`,
+        JSON.stringify(roulette),
+        {
+            ex: 60,
+        }
+    );
 }
 
 export const data = new SlashCommandBuilder()
@@ -64,7 +68,11 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const subcommand = interaction.options.getSubcommand();
-        let roulette: any = await getCache(guild, { guildId: guild }, Roulette);
+        let roulette: any = await getCache(
+            `roulette:${interaction.user.id}:${guild}`,
+            { guildId: guild },
+            Roulette
+        );
 
         switch (subcommand) {
             case "random":
@@ -99,7 +107,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
                 } else {
                     roulette.items.push({ name: addElement });
 
-                    save(roulette, guild);
+                    save(roulette, guild, interaction);
 
                     return interaction.editReply(
                         `:white_check_mark: **${addElement} added!**`
@@ -125,7 +133,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
                 roulette.items.splice(removeIndex, 1);
 
-                save(roulette, guild);
+                save(roulette, guild, interaction);
 
                 return interaction.editReply(
                     `:white_check_mark: **${removeElement} removed!**`
@@ -139,7 +147,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
                 roulette.items.splice(0, roulette.items.length);
 
-                save(roulette, guild);
+                save(roulette, guild, interaction);
 
                 return interaction.editReply(
                     `:white_check_mark: **Roulette cleared!** Use \`/roulette add\` to add a new item to the list.`

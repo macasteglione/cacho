@@ -1,19 +1,23 @@
 import { CommandOptions, SlashCommandProps } from "commandkit";
-import { SlashCommandBuilder } from "discord.js";
+import { Interaction, SlashCommandBuilder } from "discord.js";
 import getCache from "../../utils/getCache";
 import { GuildInfo } from "../../models/guildInfo";
 import { redis } from "../../lib/redis";
 import showError from "../../utils/showError";
 
-async function save(guildInfo: any, option: boolean) {
+async function save(guildInfo: any, option: boolean, interaction: Interaction) {
     let guild = await GuildInfo.findOneAndUpdate(
         { guildId: guildInfo.guildId },
         { levelEnabled: option },
         { new: true }
     );
-    await redis.set(guildInfo.guildId, JSON.stringify(guild), {
-        ex: 60,
-    });
+    await redis.set(
+        `level_config:guild_info:${interaction.user.id}:${guildInfo.guildId}`,
+        JSON.stringify(guild),
+        {
+            ex: 60,
+        }
+    );
 }
 
 export const data = new SlashCommandBuilder()
@@ -37,13 +41,13 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const guildInfo: any = await getCache(
-            guild,
+            `level_config:guild_info:${interaction.user.id}:${guild}`,
             { guildId: guild },
             GuildInfo
         );
 
         const option = interaction.options.getBoolean("enable");
-        await save(guildInfo, option!);
+        await save(guildInfo, option!, interaction);
 
         return interaction.editReply(
             `Leveling system **has been ${option ? "enabled" : "disabled"}.**`
