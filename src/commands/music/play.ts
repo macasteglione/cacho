@@ -21,25 +21,23 @@ export const data = new SlashCommandBuilder()
             .addStringOption((option) =>
                 option
                     .setName("url")
-                    .setDescription("Playlist url")
+                    .setDescription("Playlist URL")
                     .setRequired(true)
             )
     )
     .addSubcommand((subcommand) =>
         subcommand
             .setName("song")
-            .setDescription("Plays song from YouTube")
+            .setDescription("Plays a song from YouTube")
             .addStringOption((option) =>
                 option
                     .setName("url")
-                    .setDescription("Url of the song")
+                    .setDescription("URL of the song")
                     .setRequired(true)
             )
     );
 
-export async function run({ interaction, client }: SlashCommandProps) {
-    await interaction.deferReply();
-
+async function handlePlayCommand(interaction: any) {
     if (!interaction.inGuild())
         return interaction.editReply(
             ":x: **This command only works on guilds.**"
@@ -61,80 +59,16 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
         if (!queue.connection) await queue.connect(voiceChannel);
 
-        let embed = new EmbedBuilder();
+        const embed = new EmbedBuilder();
 
-        if (interaction.options.getSubcommand() === "song") {
-            let url = interaction.options.getString("url");
+        if (interaction.options.getSubcommand() === "song")
+            await handleSongSubcommand(interaction, player, queue, embed);
+        else if (interaction.options.getSubcommand() === "playlist")
+            await handlePlaylistSubcommand(interaction, player, queue, embed);
+        else if (interaction.options.getSubcommand() === "search")
+            await handleSearchSubcommand(interaction, player, queue, embed);
 
-            const result = await player.search(url!, {
-                requestedBy: interaction.user,
-                searchEngine: QueryType.YOUTUBE_VIDEO,
-            });
-
-            if (result.tracks.length === 0)
-                return interaction.editReply("No results found.");
-
-            const song = result.tracks[0];
-            await entry.getTask();
-            await queue.addTrack(song);
-
-            embed
-                .setDescription(
-                    `Added **[${song.title}](${song.url})** to the queue.`
-                )
-                .setThumbnail(song.thumbnail)
-                .setFooter({
-                    text: `Duration: ${song.duration}`,
-                });
-        } else if (interaction.options.getSubcommand() === "playlist") {
-            let url = interaction.options.getString("url");
-
-            const result = await player.search(url!, {
-                requestedBy: interaction.user,
-                searchEngine: QueryType.YOUTUBE_VIDEO,
-            });
-
-            if (result.tracks.length === 0)
-                return interaction.editReply("No playlist found.");
-
-            const playlist = result.playlist;
-            await entry.getTask();
-            await queue.addTrack(playlist!);
-
-            embed
-                .setDescription(
-                    `Added **[${playlist!.title}](${
-                        playlist!.url
-                    })** to the queue.`
-                )
-                .setThumbnail(playlist!.thumbnail)
-                .setFooter({
-                    text: `Duration: ${playlist!.durationFormatted}`,
-                });
-        } else if (interaction.options.getSubcommand() === "search") {
-            let url = interaction.options.getString("searchterms");
-
-            const result = await player.search(url!, {
-                requestedBy: interaction.user,
-                searchEngine: QueryType.YOUTUBE,
-            });
-
-            if (result.tracks.length === 0)
-                return interaction.editReply("No results found.");
-
-            const song = result.tracks[0];
-            await entry.getTask();
-            await queue.addTrack(song);
-
-            embed
-                .setDescription(
-                    `Added **[${song.title}](${song.url})** to the queue.`
-                )
-                .setThumbnail(song.thumbnail)
-                .setFooter({
-                    text: `Duration: ${song.duration}`,
-                });
-        }
+        await entry.getTask();
 
         if (!queue.isPlaying()) await queue.node.play();
 
@@ -143,5 +77,89 @@ export async function run({ interaction, client }: SlashCommandProps) {
         showError("play", error, interaction);
     } finally {
         queue.tasksQueue.release();
+    }
+}
+
+async function handleSongSubcommand(
+    interaction: any,
+    player: any,
+    queue: any,
+    embed: any
+) {
+    const url = interaction.options.getString("url");
+    const result = await player.search(url!, {
+        requestedBy: interaction.user,
+        searchEngine: QueryType.YOUTUBE_VIDEO,
+    });
+
+    if (result.tracks.length === 0)
+        return interaction.editReply("No results found.");
+
+    const song = result.tracks[0];
+    await queue.addTrack(song);
+
+    embed
+        .setDescription(`Added **[${song.title}](${song.url})** to the queue.`)
+        .setThumbnail(song.thumbnail)
+        .setFooter({ text: `Duration: ${song.duration}` });
+}
+
+async function handlePlaylistSubcommand(
+    interaction: any,
+    player: any,
+    queue: any,
+    embed: any
+) {
+    const url = interaction.options.getString("url");
+    const result = await player.search(url!, {
+        requestedBy: interaction.user,
+        searchEngine: QueryType.YOUTUBE_PLAYLIST,
+    });
+
+    if (result.tracks.length === 0)
+        return interaction.editReply("No playlist found.");
+
+    const playlist = result.playlist;
+    await queue.addTrack(playlist!);
+
+    embed
+        .setDescription(
+            `Added **[${playlist!.title}](${playlist!.url})** to the queue.`
+        )
+        .setThumbnail(playlist!.thumbnail)
+        .setFooter({ text: `Duration: ${playlist!.durationFormatted}` });
+}
+
+async function handleSearchSubcommand(
+    interaction: any,
+    player: any,
+    queue: any,
+    embed: any
+) {
+    const searchTerms = interaction.options.getString("searchterms");
+    const result = await player.search(searchTerms!, {
+        requestedBy: interaction.user,
+        searchEngine: QueryType.YOUTUBE_SEARCH,
+    });
+
+    if (result.tracks.length === 0)
+        return interaction.editReply("No results found.");
+
+    const song = result.tracks[0];
+    await queue.addTrack(song);
+
+    embed
+        .setDescription(`Added **[${song.title}](${song.url})** to the queue.`)
+        .setThumbnail(song.thumbnail)
+        .setFooter({ text: `Duration: ${song.duration}` });
+}
+
+export async function run({ interaction, client }: SlashCommandProps) {
+    await interaction.deferReply();
+
+    try {
+        await handlePlayCommand(interaction);
+    } catch (error) {
+        showError("play", error, interaction);
     }
 }

@@ -1,24 +1,9 @@
 import { CommandOptions, SlashCommandProps } from "commandkit";
-import { Interaction, SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import getCache from "../../utils/getCache";
 import { GuildInfo } from "../../models/guildInfo";
-import { redis } from "../../lib/redis";
 import showError from "../../utils/showError";
-
-async function save(guildInfo: any, option: boolean, interaction: Interaction) {
-    let guild = await GuildInfo.findOneAndUpdate(
-        { guildId: guildInfo.guildId },
-        { levelEnabled: option },
-        { new: true }
-    );
-    await redis.set(
-        `level_config:guild_info:${interaction.user.id}:${guildInfo.guildId}`,
-        JSON.stringify(guild),
-        {
-            ex: 60,
-        }
-    );
-}
+import saveCache from "../../utils/saveCache";
 
 export const data = new SlashCommandBuilder()
     .setName("level-config")
@@ -30,6 +15,28 @@ export const data = new SlashCommandBuilder()
             .setRequired(true)
     );
 
+async function getGuildInfoCache(userId: string, guildId: string) {
+    return getCache(
+        `level_config:guild_info:${userId}:${guildId}`,
+        { guildId },
+        GuildInfo
+    );
+}
+
+async function updateGuildInfoCache(
+    userId: string,
+    guildId: string,
+    update: Record<string, any>
+) {
+    return saveCache(
+        `level_config:guild_info:${userId}:${guildId}`,
+        GuildInfo,
+        { guildId },
+        update,
+        { new: true }
+    );
+}
+
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
@@ -39,21 +46,20 @@ export async function run({ interaction, client }: SlashCommandProps) {
         );
 
     try {
-        const guild = interaction.guild!.id;
-        const guildInfo: any = await getCache(
-            `level_config:guild_info:${interaction.user.id}:${guild}`,
-            { guildId: guild },
-            GuildInfo
-        );
+        const guildId = interaction.guild!.id;
+        const userId = interaction.user.id;
+        const guildInfo: any = await getGuildInfoCache(userId, guildId);
 
         const option = interaction.options.getBoolean("enable");
-        await save(guildInfo, option!, interaction);
+        await updateGuildInfoCache(userId, guildInfo.guildId, {
+            levelEnabled: option,
+        });
 
         return interaction.editReply(
             `Leveling system **has been ${option ? "enabled" : "disabled"}.**`
         );
     } catch (error) {
-        showError("enableLevel", error, interaction);
+        showError("levelConfig", error, interaction);
     }
 }
 

@@ -24,6 +24,65 @@ export const data = new SlashCommandBuilder()
             )
     );
 
+async function getGuildInfo(interaction: any) {
+    const guildId = interaction.guild!.id;
+    return await getCache(
+        `level:guild_info:${interaction.user.id}:${guildId}`,
+        { guildId },
+        GuildInfo
+    );
+}
+
+async function getUserLevel(interaction: any, userId: string) {
+    const guildId = interaction.guild!.id;
+    return await getCache(
+        `level:fetch_level:${userId}:${guildId}`,
+        { guildId },
+        Level
+    );
+}
+
+async function getAllLevels(interaction: any) {
+    const guildId = interaction.guild!.id;
+    const query = { guildId };
+    return await findCache(
+        `level:all_levels:${interaction.user.id}:${guildId}`,
+        query,
+        Level,
+        "userId level exp"
+    );
+}
+
+function sortLevels(levels: any[]) {
+    return levels.sort((a, b) => {
+        if (a.level === b.level) return b.exp - a.exp;
+        return b.level - a.level;
+    });
+}
+
+async function buildRankCard(
+    targetUser: any,
+    fetchLevel: any,
+    currentRank: number
+) {
+    Font.loadDefault();
+
+    const rankCard = new RankCardBuilder()
+        .setAvatar(targetUser.user.displayAvatarURL({ size: 256 }))
+        .setRank(currentRank)
+        .setLevel(fetchLevel.level)
+        .setCurrentXP(fetchLevel.exp)
+        .setRequiredXP(calculateLevelExp(fetchLevel.level))
+        .setStatus(targetUser.presence ? targetUser.presence.status : "offline")
+        .setUsername(targetUser.user.username)
+        .setDisplayName(targetUser.user.displayName)
+        .setBackground("#23272a")
+        .setTextStyles({ level: "LEVEL:", xp: "EXP:", rank: "RANK:" });
+
+    const image = await rankCard.build({ format: "png" });
+    return new AttachmentBuilder(image);
+}
+
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
@@ -33,86 +92,39 @@ export async function run({ interaction, client }: SlashCommandProps) {
         );
 
     try {
-        const guild = interaction.guild!.id;
-        const guildInfo: any = await getCache(
-            `level:guild_info:${interaction.user.id}:${guild}`,
-            { guildId: guild },
-            GuildInfo
-        );
+        const guildInfo = await getGuildInfo(interaction);
 
         if (guildInfo.levelEnabled) {
-            const MENTIONED_USER_ID = interaction.options.getUser("user")?.id;
-            const TARGET_USER_ID = MENTIONED_USER_ID || interaction.user.id;
-            const TARGET_USER_OBJECT = await interaction.guild!.members.fetch(
-                TARGET_USER_ID
-            );
-            const query = { guildId: guild };
-
-            const FETCH_LEVEL: any = await getCache(
-                `level:fetch_level:${interaction.user.id}:${guild}`,
-                query,
-                Level
+            const mentionedUser = interaction.options.getUser("user");
+            const targetUserId = mentionedUser
+                ? mentionedUser.id
+                : interaction.user.id;
+            const targetUser = await interaction.guild!.members.fetch(
+                targetUserId
             );
 
-            if (!FETCH_LEVEL) {
-                interaction.editReply(
-                    MENTIONED_USER_ID
-                        ? `:x: <@${TARGET_USER_OBJECT.user.id}> **doesn't hace any levels yet.** Try again when they chat a little more.`
+            const fetchLevel = await getUserLevel(interaction, targetUserId);
+
+            if (!fetchLevel)
+                return interaction.editReply(
+                    mentionedUser
+                        ? `:x: <@${targetUser.user.id}> **doesn't have any levels yet.** Try again when they chat a little more.`
                         : "**You don't have any levels yet.** Chat a little more and try again."
                 );
-                return;
-            }
 
-            let allLevels = Object.values(
-                await findCache(
-                    `level:all_levels:${interaction.user.id}:${guild}`,
-                    query,
-                    Level,
-                    "userId level exp"
-                )
-            );
-
-            allLevels.sort((a: any, b: any) => {
-                if (a.level === b.level) return b.exp - a.exp;
-                else return b.level - a.level;
-            });
+            let allLevels = sortLevels(await getAllLevels(interaction));
 
             let currentRank =
-                allLevels.findIndex(
-                    (lvl: any) => lvl.userId === TARGET_USER_ID
-                ) + 1;
+                allLevels.findIndex((lvl) => lvl.userId === targetUserId) + 1;
 
-            Font.loadDefault();
+            const attachment = await buildRankCard(
+                targetUser,
+                fetchLevel,
+                currentRank
+            );
 
-            const RANK = new RankCardBuilder()
-                .setAvatar(
-                    TARGET_USER_OBJECT.user.displayAvatarURL({ size: 256 })
-                )
-                .setRank(currentRank)
-                .setLevel(FETCH_LEVEL.level)
-                .setCurrentXP(FETCH_LEVEL.exp)
-                .setRequiredXP(calculateLevelExp(FETCH_LEVEL.level))
-                .setStatus(
-                    TARGET_USER_OBJECT.presence
-                        ? TARGET_USER_OBJECT.presence.status
-                        : "offline"
-                )
-                .setUsername(TARGET_USER_OBJECT.user.username)
-                .setDisplayName(TARGET_USER_OBJECT.user.displayName)
-                .setBackground("#23272a")
-                .setTextStyles({
-                    level: "LEVEL:",
-                    xp: "EXP:",
-                    rank: "RANK:",
-                });
-
-            const IMAGE = await RANK.build({ format: "png" });
-            const ATTACHMENT = new AttachmentBuilder(IMAGE);
-
-            return interaction.editReply({ files: [ATTACHMENT] });
-        } else {
-            return interaction.editReply("Leveling is disabled.");
-        }
+            return interaction.editReply({ files: [attachment] });
+        } else return interaction.editReply("Leveling is disabled.");
     } catch (error) {
         showError("level", error, interaction);
     }

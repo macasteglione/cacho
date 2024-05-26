@@ -13,24 +13,30 @@ export const data = new SlashCommandBuilder()
             .setRequired(true)
     );
 
+async function fetchChatResponse(prompt: string) {
+    const result = await chat.sendMessage(prompt);
+    return result.response.text();
+}
+
+async function handleLongReply(reply: string, interaction: any) {
+    const attachFile = new AttachmentBuilder(Buffer.from(reply)).setName(
+        "message.txt"
+    );
+    await interaction.editReply({ files: [attachFile] });
+}
+
+async function handleReply(reply: string, interaction: any) {
+    if (reply.length > 2000) await handleLongReply(reply, interaction);
+    else await interaction.editReply(reply);
+}
+
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
     try {
-        const result = await chat.sendMessage(
-            interaction.options.getString("prompt")!
-        );
-
-        const reply = await result.response.text();
-
-        if (reply.length > 2000) {
-            const attachFile = new AttachmentBuilder(
-                Buffer.from(reply)
-            ).setName("message.txt");
-            await interaction.editReply({
-                files: [attachFile],
-            });
-        } else await interaction.editReply(reply);
+        const prompt = interaction.options.getString("prompt", true);
+        const reply = await fetchChatResponse(prompt);
+        await handleReply(reply, interaction);
     } catch (error) {
         showError("chat", error, interaction);
     }

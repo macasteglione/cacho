@@ -16,8 +16,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
         );
 
     try {
-        const guild = interaction.guild!.id;
-        const queue = useQueue(guild);
+        const queue = useQueue(interaction.guild!.id);
 
         if (!queue) return interaction.editReply("There is no song playing.");
 

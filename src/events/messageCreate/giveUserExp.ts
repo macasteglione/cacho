@@ -4,77 +4,65 @@ import { GuildInfo } from "../../models/guildInfo";
 import { Message } from "discord.js";
 import getCache from "../../utils/getCache";
 
-const cooldowns = new Set();
+const cooldowns = new Set<string>();
 
-function giveRandomExp(min: number, max: number) {
+function giveRandomExp(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export default async (message: Message, client: any) => {
-    const guildId = message.guild!.id;
-    const guildinfo: any = await getCache(
+export default async function giveUserExp(message: Message, client: any) {
+    if (
+        !message.guild ||
+        message.author.bot ||
+        cooldowns.has(message.author.id)
+    )
+        return;
+
+    const guildId = message.guild.id;
+    const guildInfo: any = await getCache(
         `give_user_exp:guild_info:${message.author.id}:${guildId}`,
         { guildId: guildId },
         GuildInfo
     );
 
-    if (
-        !message.inGuild() ||
-        message.author.bot ||
-        cooldowns.has(message.author.id) &&
-        !guildinfo.levelEnabled
-    )
-        return;
+    if (!guildInfo || !guildInfo.levelEnabled) return;
 
     const EXP_TO_GIVE = giveRandomExp(5, 15);
 
-    const QUERY = {
-        userId: message.author.id,
-        guildId: guildId,
-    };
-
     try {
-        const LEVEL = await Level.findOne(QUERY);
+        let level = await Level.findOne({
+            userId: message.author.id,
+            guildId: guildId,
+        });
 
-        if (LEVEL) {
-            LEVEL.exp += EXP_TO_GIVE;
-
-            if (LEVEL.exp > calculateLevelExp(LEVEL.level)) {
-                LEVEL.exp = 0;
-                LEVEL.level += 1;
-
-                message.channel.send(
-                    `:tada:\t${message.member} you have leveled up to **level ${LEVEL.level}**!\t:tada:`
-                );
-            }
-
-            await LEVEL.save().catch((error) => {
-                console.log(`Error saving updated level: ${error}`);
-            });
-
-            cooldowns.add(message.author.id);
-
-            setTimeout(() => {
-                cooldowns.delete(message.author.id);
-            }, 60000);
-        } else {
-            const NEW_LEVEL = new Level({
+        if (!level)
+            level = new Level({
                 userId: message.author.id,
-                guildId: message.guild!.id,
+                guildId: guildId,
                 exp: EXP_TO_GIVE,
             });
+        else {
+            level.exp += EXP_TO_GIVE;
 
-            await NEW_LEVEL.save();
+            if (level.exp >= calculateLevelExp(level.level)) {
+                level.exp -= calculateLevelExp(level.level);
+                level.level += 1;
 
-            cooldowns.add(message.author.id);
-
-            setTimeout(() => {
-                cooldowns.delete(message.author.id);
-            }, 60000);
+                message.channel.send(
+                    `:tada: Congratulations, ${message.author}! You've reached **level ${level.level}**! :tada:`
+                );
+            }
         }
+
+        await level.save();
+        cooldowns.add(message.author.id);
+
+        setTimeout(() => {
+            cooldowns.delete(message.author.id);
+        }, 60000);
     } catch (error) {
-        console.log(`Error giving exp: ${error}`);
+        console.error(`Error giving exp: ${error}`);
     }
-};
+}

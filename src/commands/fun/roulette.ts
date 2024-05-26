@@ -1,24 +1,9 @@
-import { Interaction, SlashCommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { SlashCommandProps } from "commandkit";
 import { Roulette } from "../../models/Roulette";
-import { redis } from "../../lib/redis";
 import getCache from "../../utils/getCache";
 import showError from "../../utils/showError";
-
-async function save(roulette: any, guild: any, interaction: Interaction) {
-    roulette = await Roulette.findOneAndUpdate(
-        { guildId: guild },
-        { items: roulette.items },
-        { new: true }
-    );
-    await redis.set(
-        `roulette:${interaction.user.id}:${guild}`,
-        JSON.stringify(roulette),
-        {
-            ex: 60,
-        }
-    );
-}
+import saveCache from "../../utils/saveCache";
 
 export const data = new SlashCommandBuilder()
     .setName("roulette")
@@ -57,6 +42,104 @@ export const data = new SlashCommandBuilder()
         subcommand.setName("show").setDescription("Shows the roulette.")
     );
 
+async function getRoulette(interaction: any, guildId: string) {
+    return await getCache(
+        `roulette:${interaction.user.id}:${guildId}`,
+        { guildId },
+        Roulette
+    );
+}
+
+async function saveRoulette(interaction: any, guildId: string, items: any[]) {
+    await saveCache(
+        `roulette:${interaction.user.id}:${guildId}`,
+        Roulette,
+        { guildId },
+        { items },
+        { new: true }
+    );
+}
+
+async function handleRandom(interaction: any, roulette: any) {
+    if (!roulette || roulette.items.length === 0)
+        return interaction.editReply("There are no elements in the roulette.");
+
+    const randomIndex = Math.floor(Math.random() * roulette.items.length);
+    const randomElement = roulette.items[randomIndex].name;
+
+    return interaction.editReply(
+        `:game_die: **Random element selected:** ${randomElement}`
+    );
+}
+
+async function handleAdd(interaction: any, roulette: any, guildId: string) {
+    const addElement = interaction.options.getString("element");
+
+    if (!roulette) {
+        const newRoulette = new Roulette({
+            guildId,
+            items: [{ name: addElement }],
+        });
+
+        await newRoulette.save();
+        return interaction.editReply(
+            `:white_check_mark: **Roulette created!** Use \`/roulette add\` to add a new item to the list.`
+        );
+    } else {
+        roulette.items.push({ name: addElement });
+        await saveRoulette(interaction, guildId, roulette.items);
+
+        return interaction.editReply(
+            `:white_check_mark: **${addElement} added!**`
+        );
+    }
+}
+
+async function handleRemove(interaction: any, roulette: any, guildId: string) {
+    if (!roulette || roulette.items.length === 0)
+        return interaction.editReply("There are no elements in the roulette.");
+
+    const removeElement = interaction.options.getString("element");
+    const removeIndex = roulette.items.findIndex(
+        (item: any) => item.name === removeElement
+    );
+
+    if (removeIndex === -1)
+        return interaction.editReply(
+            "The specified element is not found in the roulette."
+        );
+
+    roulette.items.splice(removeIndex, 1);
+    await saveRoulette(interaction, guildId, roulette.items);
+
+    return interaction.editReply(
+        `:white_check_mark: **${removeElement} removed!**`
+    );
+}
+
+async function handleClear(interaction: any, roulette: any, guildId: string) {
+    if (!roulette || roulette.items.length === 0)
+        return interaction.editReply("There are no elements in the roulette.");
+
+    roulette.items.splice(0, roulette.items.length);
+    await saveRoulette(interaction, guildId, roulette.items);
+
+    return interaction.editReply(
+        `:white_check_mark: **Roulette cleared!** Use \`/roulette add\` to add a new item to the list.`
+    );
+}
+
+async function handleShow(interaction: any, roulette: any) {
+    if (!roulette || roulette.items.length === 0)
+        return interaction.editReply("There are no elements in the roulette.");
+
+    return interaction.editReply(
+        `:game_die: **Roulette:**\n${roulette.items
+            .map((item: any, index: any) => `${index + 1}. ${item.name}`)
+            .join("\n")}`
+    );
+}
+
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
@@ -66,107 +149,30 @@ export async function run({ interaction, client }: SlashCommandProps) {
         );
 
     try {
-        const guild = interaction.guild!.id;
+        const guildId = interaction.guild!.id;
         const subcommand = interaction.options.getSubcommand();
-        let roulette: any = await getCache(
-            `roulette:${interaction.user.id}:${guild}`,
-            { guildId: guild },
-            Roulette
-        );
+        const roulette = await getRoulette(interaction, guildId);
 
         switch (subcommand) {
             case "random":
-                if (!roulette || roulette.items.length === 0)
-                    return interaction.editReply(
-                        "There are no elements in the roulette."
-                    );
-
-                const randomIndex = Math.floor(
-                    Math.random() * roulette.items.length
-                );
-                const randomElement = roulette.items[randomIndex].name;
-
-                return interaction.editReply(
-                    `:game_die: **Random element selected:** ${randomElement}`
-                );
+                await handleRandom(interaction, roulette);
+                break;
 
             case "add":
-                const addElement = interaction.options.getString("element");
-
-                if (!roulette) {
-                    const newRoulette = new Roulette({
-                        guildId: guild,
-                        items: [{ name: addElement }],
-                    });
-
-                    await newRoulette.save();
-
-                    return interaction.editReply(
-                        `:white_check_mark: **Roulette created!** Use \`/roulette add\` to add a new item to the list.`
-                    );
-                } else {
-                    roulette.items.push({ name: addElement });
-
-                    save(roulette, guild, interaction);
-
-                    return interaction.editReply(
-                        `:white_check_mark: **${addElement} added!**`
-                    );
-                }
+                await handleAdd(interaction, roulette, guildId);
+                break;
 
             case "remove":
-                if (!roulette || roulette.items.length === 0)
-                    return interaction.editReply(
-                        "There are no elements in the roulette."
-                    );
-
-                const removeElement = interaction.options.getString("element");
-
-                const removeIndex = roulette.items.findIndex(
-                    (item: any) => item.name === removeElement
-                );
-
-                if (removeIndex === -1)
-                    return interaction.editReply(
-                        "The specified element is not found in the roulette."
-                    );
-
-                roulette.items.splice(removeIndex, 1);
-
-                save(roulette, guild, interaction);
-
-                return interaction.editReply(
-                    `:white_check_mark: **${removeElement} removed!**`
-                );
+                await handleRemove(interaction, roulette, guildId);
+                break;
 
             case "clear":
-                if (!roulette || roulette.items.length === 0)
-                    return interaction.editReply(
-                        "There are no elements in the roulette."
-                    );
-
-                roulette.items.splice(0, roulette.items.length);
-
-                save(roulette, guild, interaction);
-
-                return interaction.editReply(
-                    `:white_check_mark: **Roulette cleared!** Use \`/roulette add\` to add a new item to the list.`
-                );
+                await handleClear(interaction, roulette, guildId);
+                break;
 
             case "show":
-                if (!roulette || roulette.items.length === 0)
-                    return interaction.editReply(
-                        "There are no elements in the roulette."
-                    );
-
-                return interaction.editReply(
-                    `:game_die: **Roulette:**\n${roulette.items
-                        .map(
-                            (item: any, index: any) =>
-                                `${index + 1}. ${item.name}`
-                        )
-                        .join("\n")}`
-                );
+                await handleShow(interaction, roulette);
+                break;
         }
     } catch (error) {
         showError("roulette", error, interaction);

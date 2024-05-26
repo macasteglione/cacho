@@ -5,21 +5,24 @@ import showError from "../../utils/showError";
 
 export const data = new SlashCommandBuilder()
     .setName("pause")
-    .setDescription("Pauses the curent song.");
+    .setDescription("Pauses the current song.");
+
+async function handlePauseCommand(interaction: any) {
+    const queue = useQueue(interaction.guild!.id);
+
+    if (!queue) {
+        return interaction.editReply("There is no song playing.");
+    }
+
+    queue.node.setPaused(true);
+    await interaction.editReply("The current song has been paused.");
+}
 
 export async function run({ interaction, client }: SlashCommandProps) {
     await interaction.deferReply();
 
     try {
-        const guild = interaction.guild!.id;
-        const queue = useQueue(guild);
-
-        if (!queue) 
-            return interaction.editReply("There is no song playing.");
-        
-        queue.node.setPaused(true);
-
-        await interaction.editReply("The current song has been paused.");
+        await handlePauseCommand(interaction);
     } catch (error) {
         showError("pause", error, interaction);
     }
