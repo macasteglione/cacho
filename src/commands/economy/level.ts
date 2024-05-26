@@ -67,7 +67,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             }
 
             let allLevels = Object.values(
-                await findCache("all_levels", query, Level, "userId level exp")
+                await findCache(guild, query, Level, "userId level exp")
             );
 
             allLevels.sort((a: any, b: any) => {
