@@ -38,7 +38,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         const guild = interaction.guild!.id;
         const guildInfo: any = await getCache(
-            "guild_info",
+            guild,
             { guildId: guild },
             GuildInfo
         );
@@ -52,7 +52,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             const query = { guildId: guild };
 
             const FETCH_LEVEL: any = await getCache(
-                "fetch_level",
+                guild,
                 query,
                 Level
             );
