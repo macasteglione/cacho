@@ -22,7 +22,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
             .addFields(
                 {
                     name: "Fun",
-                    value: "`roulette`",
+                    value: "`roulette`, `chat`",
                 },
                 {
                     name: "Misc",
