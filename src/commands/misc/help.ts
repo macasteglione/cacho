@@ -31,10 +31,10 @@ function createHelpEmbed(client: any) {
             },
             {
                 name: "Music",
-                value: "`play`, `skip`, `pause`, `resume`, `queue`, `exit`",
+                value: "`play`, `skip`, `pause`, `resume`, `queue`, `leave`",
             },
             {
-                name: "Config",
+                name: "Config (Admin only)",
                 value: "`level-config`",
             }
         );

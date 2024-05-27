@@ -4,8 +4,8 @@ import { useQueue } from "discord-player";
 import showError from "../../utils/showError";
 
 export const data = new SlashCommandBuilder()
-    .setName("exit")
-    .setDescription("Exits the voice channel.");
+    .setName("leave")
+    .setDescription("Leaves the voice channel.");
 
 async function handleExitCommand(interaction: any) {
     if (!interaction.inGuild())
@@ -27,6 +27,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         await handleExitCommand(interaction);
     } catch (error) {
-        showError("exit", error, interaction);
+        showError("leave", error, interaction);
     }
 }
