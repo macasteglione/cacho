@@ -13,16 +13,13 @@ function giveRandomExp(min: number, max: number): number {
 }
 
 export default async function giveUserExp(message: Message, client: any) {
-    if (
-        !message.guild ||
-        message.author.bot ||
-        cooldowns.has(message.author.id)
-    )
-        return;
+    const userId = message.author.id;
+    const guildId = message.guild!.id;
 
-    const guildId = message.guild.id;
+    if (!message.guild || message.author.bot || cooldowns.has(userId)) return;
+
     const guildInfo: any = await getCache(
-        `give_user_exp:guild_info:${message.author.id}:${guildId}`,
+        `give_user_exp:guild_info:${userId}:${guildId}`,
         { guildId: guildId },
         GuildInfo
     );
@@ -33,13 +30,13 @@ export default async function giveUserExp(message: Message, client: any) {
 
     try {
         let level = await Level.findOne({
-            userId: message.author.id,
+            userId: userId,
             guildId: guildId,
         });
 
         if (!level)
             level = new Level({
-                userId: message.author.id,
+                userId: userId,
                 guildId: guildId,
                 exp: EXP_TO_GIVE,
             });
@@ -57,10 +54,10 @@ export default async function giveUserExp(message: Message, client: any) {
         }
 
         await level.save();
-        cooldowns.add(message.author.id);
+        cooldowns.add(userId);
 
         setTimeout(() => {
-            cooldowns.delete(message.author.id);
+            cooldowns.delete(userId);
         }, 60000);
     } catch (error) {
         console.error(`Error giving exp: ${error}`);

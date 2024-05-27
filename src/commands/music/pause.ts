@@ -10,9 +10,8 @@ export const data = new SlashCommandBuilder()
 async function handlePauseCommand(interaction: any) {
     const queue = useQueue(interaction.guild!.id);
 
-    if (!queue) {
+    if (!queue) 
         return interaction.editReply("There is no song playing.");
-    }
 
     queue.node.setPaused(true);
     await interaction.editReply("The current song has been paused.");

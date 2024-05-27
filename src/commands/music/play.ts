@@ -59,20 +59,14 @@ async function handlePlayCommand(interaction: any) {
 
         if (!queue.connection) await queue.connect(voiceChannel);
 
-        const embed = new EmbedBuilder();
-
         if (interaction.options.getSubcommand() === "song")
-            await handleSongSubcommand(interaction, player, queue, embed);
+            await handleSongSubcommand(interaction, player, queue, entry);
         else if (interaction.options.getSubcommand() === "playlist")
-            await handlePlaylistSubcommand(interaction, player, queue, embed);
+            await handlePlaylistSubcommand(interaction, player, queue, entry);
         else if (interaction.options.getSubcommand() === "search")
-            await handleSearchSubcommand(interaction, player, queue, embed);
-
-        await entry.getTask();
+            await handleSearchSubcommand(interaction, player, queue, entry);
 
         if (!queue.isPlaying()) await queue.node.play();
-
-        await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         showError("play", error, interaction);
     } finally {
@@ -84,7 +78,7 @@ async function handleSongSubcommand(
     interaction: any,
     player: any,
     queue: any,
-    embed: any
+    entry: any
 ) {
     const url = interaction.options.getString("url");
     const result = await player.search(url!, {
@@ -93,22 +87,29 @@ async function handleSongSubcommand(
     });
 
     if (result.tracks.length === 0)
-        return interaction.editReply("No results found.");
+        return interaction.editReply(":x: **No results found.**");
 
     const song = result.tracks[0];
+    await entry.getTask();
     await queue.addTrack(song);
 
-    embed
-        .setDescription(`Added **[${song.title}](${song.url})** to the queue.`)
-        .setThumbnail(song.thumbnail)
-        .setFooter({ text: `Duration: ${song.duration}` });
+    await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setDescription(
+                    `Added **[${song.title}](${song.url})** to the queue.`
+                )
+                .setThumbnail(song.thumbnail)
+                .setFooter({ text: `Duration: ${song.duration}` }),
+        ],
+    });
 }
 
 async function handlePlaylistSubcommand(
     interaction: any,
     player: any,
     queue: any,
-    embed: any
+    entry: any
 ) {
     const url = interaction.options.getString("url");
     const result = await player.search(url!, {
@@ -117,24 +118,33 @@ async function handlePlaylistSubcommand(
     });
 
     if (result.tracks.length === 0)
-        return interaction.editReply("No playlist found.");
+        return interaction.editReply(":x: **No results found.**");
 
     const playlist = result.playlist;
+    await entry.getTask();
     await queue.addTrack(playlist!);
 
-    embed
-        .setDescription(
-            `Added **[${playlist!.title}](${playlist!.url})** to the queue.`
-        )
-        .setThumbnail(playlist!.thumbnail)
-        .setFooter({ text: `Duration: ${playlist!.durationFormatted}` });
+    await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setDescription(
+                    `Added **[${playlist!.title}](${
+                        playlist!.url
+                    })** to the queue.`
+                )
+                .setThumbnail(playlist!.thumbnail)
+                .setFooter({
+                    text: `Duration: ${playlist!.durationFormatted}`,
+                }),
+        ],
+    });
 }
 
 async function handleSearchSubcommand(
     interaction: any,
     player: any,
     queue: any,
-    embed: any
+    entry: any
 ) {
     const searchTerms = interaction.options.getString("searchterms");
     const result = await player.search(searchTerms!, {
@@ -143,15 +153,22 @@ async function handleSearchSubcommand(
     });
 
     if (result.tracks.length === 0)
-        return interaction.editReply("No results found.");
+        return interaction.editReply(":x: **No results found.**");
 
     const song = result.tracks[0];
+    await entry.getTask();
     await queue.addTrack(song);
 
-    embed
-        .setDescription(`Added **[${song.title}](${song.url})** to the queue.`)
-        .setThumbnail(song.thumbnail)
-        .setFooter({ text: `Duration: ${song.duration}` });
+    await interaction.editReply({
+        embeds: [
+            new EmbedBuilder()
+                .setDescription(
+                    `Added **[${song.title}](${song.url})** to the queue.`
+                )
+                .setThumbnail(song.thumbnail)
+                .setFooter({ text: `Duration: ${song.duration}` }),
+        ],
+    });
 }
 
 export async function run({ interaction, client }: SlashCommandProps) {

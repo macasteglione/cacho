@@ -42,19 +42,19 @@ export const data = new SlashCommandBuilder()
         subcommand.setName("show").setDescription("Shows the roulette.")
     );
 
-async function getRoulette(interaction: any, guildId: string) {
+async function getRoulette(userId: string, guildId: string) {
     return await getCache(
-        `roulette:${interaction.user.id}:${guildId}`,
-        { guildId },
+        `roulette:${userId}:${guildId}`,
+        { guildId: guildId },
         Roulette
     );
 }
 
-async function saveRoulette(interaction: any, guildId: string, items: any[]) {
+async function saveRoulette(userId: string, guildId: string, items: any[]) {
     await saveCache(
-        `roulette:${interaction.user.id}:${guildId}`,
+        `roulette:${userId}:${guildId}`,
         Roulette,
-        { guildId },
+        { guildId: guildId },
         { items },
         { new: true }
     );
@@ -87,7 +87,7 @@ async function handleAdd(interaction: any, roulette: any, guildId: string) {
         );
     } else {
         roulette.items.push({ name: addElement });
-        await saveRoulette(interaction, guildId, roulette.items);
+        await saveRoulette(interaction.user.id, guildId, roulette.items);
 
         return interaction.editReply(
             `:white_check_mark: **${addElement} added!**`
@@ -110,7 +110,7 @@ async function handleRemove(interaction: any, roulette: any, guildId: string) {
         );
 
     roulette.items.splice(removeIndex, 1);
-    await saveRoulette(interaction, guildId, roulette.items);
+    await saveRoulette(interaction.user.id, guildId, roulette.items);
 
     return interaction.editReply(
         `:white_check_mark: **${removeElement} removed!**`
@@ -122,7 +122,7 @@ async function handleClear(interaction: any, roulette: any, guildId: string) {
         return interaction.editReply("There are no elements in the roulette.");
 
     roulette.items.splice(0, roulette.items.length);
-    await saveRoulette(interaction, guildId, roulette.items);
+    await saveRoulette(interaction.user.id, guildId, roulette.items);
 
     return interaction.editReply(
         `:white_check_mark: **Roulette cleared!** Use \`/roulette add\` to add a new item to the list.`
@@ -150,10 +150,9 @@ export async function run({ interaction, client }: SlashCommandProps) {
 
     try {
         const guildId = interaction.guild!.id;
-        const subcommand = interaction.options.getSubcommand();
-        const roulette = await getRoulette(interaction, guildId);
+        const roulette = await getRoulette(interaction.user.id, guildId);
 
-        switch (subcommand) {
+        switch (interaction.options.getSubcommand()) {
             case "random":
                 await handleRandom(interaction, roulette);
                 break;

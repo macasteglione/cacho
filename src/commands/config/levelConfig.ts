@@ -18,7 +18,7 @@ export const data = new SlashCommandBuilder()
 async function getGuildInfoCache(userId: string, guildId: string) {
     return getCache(
         `level_config:guild_info:${userId}:${guildId}`,
-        { guildId },
+        { guildId: guildId },
         GuildInfo
     );
 }
@@ -31,7 +31,7 @@ async function updateGuildInfoCache(
     return saveCache(
         `level_config:guild_info:${userId}:${guildId}`,
         GuildInfo,
-        { guildId },
+        { guildId: guildId },
         update,
         { new: true }
     );

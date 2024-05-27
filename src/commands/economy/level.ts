@@ -24,30 +24,26 @@ export const data = new SlashCommandBuilder()
             )
     );
 
-async function getGuildInfo(interaction: any) {
-    const guildId = interaction.guild!.id;
+async function getGuildInfo(guildId: string, userId: string) {
     return await getCache(
-        `level:guild_info:${interaction.user.id}:${guildId}`,
-        { guildId },
+        `level:guild_info:${userId}:${guildId}`,
+        { guildId: guildId },
         GuildInfo
     );
 }
 
-async function getUserLevel(interaction: any, userId: string) {
-    const guildId = interaction.guild!.id;
+async function getUserLevel(guildId: string, userId: string) {
     return await getCache(
         `level:fetch_level:${userId}:${guildId}`,
-        { guildId },
+        { guildId: guildId, userId: userId },
         Level
     );
 }
 
-async function getAllLevels(interaction: any) {
-    const guildId = interaction.guild!.id;
-    const query = { guildId };
+async function getAllLevels(guildId: string, userId: string) {
     return await findCache(
-        `level:all_levels:${interaction.user.id}:${guildId}`,
-        query,
+        `level:all_levels:${userId}:${guildId}`,
+        { guildId: guildId, userId: userId },
         Level,
         "userId level exp"
     );
@@ -92,39 +88,44 @@ export async function run({ interaction, client }: SlashCommandProps) {
         );
 
     try {
-        const guildInfo = await getGuildInfo(interaction);
+        const guildInfo = await getGuildInfo(
+            interaction.guild!.id,
+            interaction.user.id
+        );
 
-        if (guildInfo.levelEnabled) {
-            const mentionedUser = interaction.options.getUser("user");
-            const targetUserId = mentionedUser
-                ? mentionedUser.id
-                : interaction.user.id;
-            const targetUser = await interaction.guild!.members.fetch(
-                targetUserId
+        if (!guildInfo.levelEnabled)
+            return interaction.editReply("Leveling is disabled.");
+
+        const mentionedUser = interaction.options.getUser("user");
+        const targetUserId = mentionedUser
+            ? mentionedUser.id
+            : interaction.user.id;
+        const targetUser = await interaction.guild!.members.fetch(targetUserId);
+
+        const fetchLevel = await getUserLevel(guildInfo.guildId, targetUserId);
+
+        if (!fetchLevel)
+            return interaction.editReply(
+                mentionedUser
+                    ? `:x: <@${targetUser.user.id}> **doesn't have any levels yet.** Try again when they chat a little more.`
+                    : "**You don't have any levels yet.** Chat a little more and try again."
             );
 
-            const fetchLevel = await getUserLevel(interaction, targetUserId);
+        let allLevels = sortLevels(
+            await getAllLevels(guildInfo.guildId, targetUserId)
+        );
 
-            if (!fetchLevel)
-                return interaction.editReply(
-                    mentionedUser
-                        ? `:x: <@${targetUser.user.id}> **doesn't have any levels yet.** Try again when they chat a little more.`
-                        : "**You don't have any levels yet.** Chat a little more and try again."
-                );
+        let currentRank =
+            allLevels.findIndex((lvl) => lvl.userId === targetUserId) + 1;
+        console.log(targetUserId);
 
-            let allLevels = sortLevels(await getAllLevels(interaction));
+        const attachment = await buildRankCard(
+            targetUser,
+            fetchLevel,
+            currentRank
+        );
 
-            let currentRank =
-                allLevels.findIndex((lvl) => lvl.userId === targetUserId) + 1;
-
-            const attachment = await buildRankCard(
-                targetUser,
-                fetchLevel,
-                currentRank
-            );
-
-            return interaction.editReply({ files: [attachment] });
-        } else return interaction.editReply("Leveling is disabled.");
+        return interaction.editReply({ files: [attachment] });
     } catch (error) {
         showError("level", error, interaction);
     }
