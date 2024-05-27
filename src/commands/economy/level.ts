@@ -40,10 +40,10 @@ async function getUserLevel(guildId: string, userId: string) {
     );
 }
 
-async function getAllLevels(guildId: string, userId: string) {
+async function getAllLevels(guildId: string) {
     return await findCache(
-        `level:all_levels:${userId}:${guildId}`,
-        { guildId: guildId, userId: userId },
+        `level:all_levels:${guildId}`,
+        { guildId: guildId },
         Level,
         "userId level exp"
     );
@@ -112,12 +112,11 @@ export async function run({ interaction, client }: SlashCommandProps) {
             );
 
         let allLevels = sortLevels(
-            await getAllLevels(guildInfo.guildId, targetUserId)
+            await getAllLevels(guildInfo.guildId)
         );
 
         let currentRank =
             allLevels.findIndex((lvl) => lvl.userId === targetUserId) + 1;
-        console.log(targetUserId);
 
         const attachment = await buildRankCard(
             targetUser,
