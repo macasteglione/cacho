@@ -1,5 +1,5 @@
 import { Client, Guild } from "discord.js";
-import { GuildInfo } from "../../models/guildInfo";
+import { GuildInfo } from "../../models/GuildInfo";
 
 export default async (guild: Guild, client: Client) => {
     try {

@@ -8,12 +8,12 @@ export const data = new SlashCommandBuilder()
     .setDescription("Plays a song.")
     .addSubcommand((subcommand) =>
         subcommand
-            .setName("search")
-            .setDescription("Link or search for a song.")
+            .setName("song")
+            .setDescription("Play a song!")
             .addStringOption((option) =>
                 option
-                    .setName("searchterms")
-                    .setDescription("Search")
+                    .setName("query")
+                    .setDescription("Link or search for a song.")
                     .setRequired(true)
             )
     )
@@ -53,8 +53,8 @@ async function handlePlayCommand(interaction: any) {
 
         if (interaction.options.getSubcommand() === "playlist")
             await handlePlaylistSubcommand(interaction, player, queue, entry);
-        else if (interaction.options.getSubcommand() === "search")
-            await handleSearchSubcommand(interaction, player, queue, entry);
+        else if (interaction.options.getSubcommand() === "song")
+            await handleSongSubcommand(interaction, player, queue, entry);
 
         if (!queue.isPlaying()) await queue.node.play();
     } catch (error) {
@@ -99,13 +99,13 @@ async function handlePlaylistSubcommand(
     });
 }
 
-async function handleSearchSubcommand(
+async function handleSongSubcommand(
     interaction: any,
     player: any,
     queue: any,
     entry: any
 ) {
-    const searchTerms = interaction.options.getString("searchterms");
+    const searchTerms = interaction.options.getString("query");
     const result = await player.search(searchTerms!, {
         requestedBy: interaction.user,
         searchEngine: QueryType.YOUTUBE,
@@ -136,6 +136,6 @@ export async function run({ interaction, client }: SlashCommandProps) {
     try {
         await handlePlayCommand(interaction);
     } catch (error) {
-        showError("play", error, interaction);
+        showError("music", error, interaction);
     }
 }

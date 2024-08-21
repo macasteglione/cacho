@@ -1,7 +1,7 @@
 import { CommandOptions, SlashCommandProps } from "commandkit";
 import { SlashCommandBuilder } from "discord.js";
 import getCache from "../../utils/getCache";
-import { GuildInfo } from "../../models/guildInfo";
+import { GuildInfo } from "../../models/GuildInfo";
 import showError from "../../utils/showError";
 import saveCache from "../../utils/saveCache";
 

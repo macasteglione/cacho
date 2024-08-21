@@ -7,7 +7,7 @@ import calculateLevelExp from "../../utils/calculateLevelExp";
 import getCache from "../../utils/getCache";
 import showError from "../../utils/showError";
 import findCache from "../../utils/findCache";
-import { GuildInfo } from "../../models/guildInfo";
+import { GuildInfo } from "../../models/GuildInfo";
 
 export const data = new SlashCommandBuilder()
     .setName("level")
@@ -111,9 +111,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
                     : "**You don't have any levels yet.** Chat a little more and try again."
             );
 
-        let allLevels = sortLevels(
-            await getAllLevels(guildInfo.guildId)
-        );
+        let allLevels = sortLevels(await getAllLevels(guildInfo.guildId));
 
         let currentRank =
             allLevels.findIndex((lvl) => lvl.userId === targetUserId) + 1;

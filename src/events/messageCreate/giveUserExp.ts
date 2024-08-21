@@ -1,24 +1,24 @@
 import { Level } from "../../models/Level";
 import calculateLevelExp from "../../utils/calculateLevelExp";
-import { GuildInfo } from "../../models/guildInfo";
-import { Message } from "discord.js";
+import { GuildInfo } from "../../models/GuildInfo";
+import { Client, Message } from "discord.js";
 import getCache from "../../utils/getCache";
 
 const cooldowns = new Set<string>();
 
-function giveRandomExp(min: number, max: number): number {
+function giveRandomExp(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export default async function giveUserExp(message: Message, client: any) {
+export default async function giveUserExp(message: Message, client: Client) {
     const userId = message.author.id;
     const guildId = message.guild!.id;
 
     if (!message.guild || message.author.bot || cooldowns.has(userId)) return;
 
-    const guildInfo: any = await getCache(
+    const guildInfo = await getCache(
         `give_user_exp:guild_info:${userId}:${guildId}`,
         { guildId: guildId },
         GuildInfo

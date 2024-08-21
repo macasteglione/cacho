@@ -7,7 +7,7 @@ export default async (
     schema: Model<any>,
     items?: string
 ): Promise<any> => {
-    const cacheResult: any = await redis.get(key);
+    const cacheResult = await redis.get(key);
 
     if (cacheResult) return cacheResult;
     else {

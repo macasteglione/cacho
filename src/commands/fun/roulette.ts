@@ -85,14 +85,12 @@ async function handleAdd(interaction: any, roulette: any, guildId: string) {
         return interaction.editReply(
             `:white_check_mark: **Roulette created!** Use \`/roulette add\` to add a new item to the list.`
         );
-    } else {
-        roulette.items.push({ name: addElement });
-        await saveRoulette(interaction.user.id, guildId, roulette.items);
-
-        return interaction.editReply(
-            `:white_check_mark: **${addElement} added!**`
-        );
     }
+    
+    roulette.items.push({ name: addElement });
+    await saveRoulette(interaction.user.id, guildId, roulette.items);
+
+    return interaction.editReply(`:white_check_mark: **${addElement} added!**`);
 }
 
 async function handleRemove(interaction: any, roulette: any, guildId: string) {
